@@ -10,14 +10,13 @@ import Meetings from './pages/dashboard/meetings';
 import Members from './pages/dashboard/members';
 import News from './pages/dashboard/news';
 import Workinggroups from './pages/dashboard/workinggroups';
-import Layout from './layouts/dashboard/layout';
 
 
 
 const theme = createTheme({
   palette: {
     primary: {
-      main: '#0000'
+      main: '#ff000'
     },
     secondary: {
       main: '#333333'
@@ -45,10 +44,7 @@ function App() {
       <Router>
         <Routes>
           <Route path="/" element={<Login />} />
-          <Route path="/dashboard" element={<Layout />} >
-            <Route index element={<Dashboard/>}/>
-            <Route path="abc" element={<div>abc</div>}/>
-          </Route>
+          <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/users" element={<Users />} />
           <Route path="/documents" element={<Documents />} />
           <Route path="/links" element={<Links/>} />
