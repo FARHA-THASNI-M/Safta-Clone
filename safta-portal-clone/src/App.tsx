@@ -1,29 +1,21 @@
+import React from 'react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { CssBaseline } from '@mui/material';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/login/login';
-import  Dashboard  from './pages/dashboard/home';
-import Users from './pages/dashboard/users';
-import Documents from './pages/dashboard/documents';
-import Links from './pages/dashboard/links';
-import Meetings from './pages/dashboard/meetings';
-import Members from './pages/dashboard/members';
-import News from './pages/dashboard/news';
-import Workinggroups from './pages/dashboard/workinggroups';
-
-
+import Dashboard from './pages/dashboard/dashboard';
 
 const theme = createTheme({
   palette: {
     primary: {
-      main: '#ff000'
+      main: '#ff000',
     },
     secondary: {
-      main: '#333333'
+      main: '#333333',
     },
     background: {
       default: '#f5f5f5',
-      paper: '#ffffff'
+      paper: '#ffffff',
     },
   },
   typography: {
@@ -37,22 +29,33 @@ const theme = createTheme({
   },
 });
 
+function PrivateRoute({ element }: { element: JSX.Element }) {
+  // Check if the user is logged in by verifying localStorage
+  const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+
+  // If not logged in, redirect to login page
+  if (!isLoggedIn) {
+    return <Navigate to="/" />;
+  }
+
+  // If logged in, render the element (Dashboard)
+  return element;
+}
+
 function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <Router>
         <Routes>
+          {/* Route for Login page */}
           <Route path="/" element={<Login />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/users" element={<Users />} />
-          <Route path="/documents" element={<Documents />} />
-          <Route path="/links" element={<Links/>} />
-          <Route path="/meetings" element={<Meetings />} />
-          <Route path="/members" element={<Members/>} />
-          <Route path="/news" element={<News />} />
-          <Route path="/workinggroups" element={<Workinggroups/>} />
-
+          
+          {/* Protected Dashboard route */}
+          <Route
+            path="/dashboard"
+            element={<PrivateRoute element={<Dashboard />} />}
+          />
         </Routes>
       </Router>
     </ThemeProvider>

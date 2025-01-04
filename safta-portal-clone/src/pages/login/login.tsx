@@ -11,9 +11,10 @@ const Login: React.FC = () => {
 
     const handleLogin = () => {
         const validUsername = "user@gmail.com";
-        const validPassword = "123456789";
+        const validPassword = "12345678"; 
 
         if (username === validUsername && password === validPassword) {
+            localStorage.setItem("isLoggedIn", "true");
             navigate("/dashboard"); 
         } else {
             setError('Invalid username or password.');
