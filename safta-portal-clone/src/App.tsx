@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { CssBaseline } from '@mui/material';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
@@ -30,15 +30,12 @@ const theme = createTheme({
 });
 
 function PrivateRoute({ element }: { element: JSX.Element }) {
-  // Check if the user is logged in by verifying localStorage
   const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
 
-  // If not logged in, redirect to login page
   if (!isLoggedIn) {
     return <Navigate to="/" />;
   }
 
-  // If logged in, render the element (Dashboard)
   return element;
 }
 
@@ -48,10 +45,8 @@ function App() {
       <CssBaseline />
       <Router>
         <Routes>
-          {/* Route for Login page */}
           <Route path="/" element={<Login />} />
           
-          {/* Protected Dashboard route */}
           <Route
             path="/dashboard"
             element={<PrivateRoute element={<Dashboard />} />}
