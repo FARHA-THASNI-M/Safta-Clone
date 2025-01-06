@@ -1,4 +1,5 @@
 import { Box, Button, Grid, InputLabel, Link, TextField, Typography } from "@mui/material";
+import axios from "axios";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -9,15 +10,34 @@ const Login: React.FC = () => {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
 
-    const handleLogin = () => {
-        const validUsername = "user@gmail.com";
-        const validPassword = "12345678"; 
+    
 
-        if (username === validUsername && password === validPassword) {
-            localStorage.setItem("isLoggedIn", "true");
-            navigate("/dashboard"); 
-        } else {
-            setError('Invalid username or password.');
+    const handleLogin =async () => {
+        
+
+        const requestData = {
+            email: username,
+            password: password
+        };
+
+        const headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+        };
+
+        try {
+            const response = await axios.post('https://dev-portal.safta.sa/api/v1/auth/login?lang=en',requestData,{headers})
+            console.log(response);
+            if(response.status ===200){
+                localStorage.setItem('isAuthenticated', 'true');
+                navigate('/dashboard')
+            }else{
+                setError('incorrect')
+            }
+            
+        } catch (error) {
+            console.error (error);
+            setError('Incorrect Email or Password');
         }
     };
 
@@ -81,6 +101,7 @@ const Login: React.FC = () => {
                     width: '100%',
                     maxWidth: '400px',
                 }}>
+                    
                     <Typography
                         variant="h5"
                         fontWeight="normal"
@@ -92,8 +113,8 @@ const Login: React.FC = () => {
                         Login
                     </Typography>
                     <InputLabel sx={{
-                        marginBottom: '-8px', fontSize: '14px', color: 'black'
-                    }}>Username</InputLabel>
+                        marginBottom: '-8px', fontSize: '14px', color:theme => theme.palette.primary.main ,
+                    }}>Email</InputLabel>
                     <TextField
                         fullWidth
                         label=""
@@ -159,16 +180,6 @@ const Login: React.FC = () => {
                     >
                         Forgot username or password?
                     </Link>
-                    <Typography
-                        variant="body2"
-                        sx={{
-                            marginTop: '30px',
-                            textAlign: 'left',
-                            color: '#000',
-                        }}
-                    >
-                        Lorem ipsum dolor sit amet, consectetur adipisicing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-                    </Typography>
                 </Box>
             </Grid>
         </Grid>
