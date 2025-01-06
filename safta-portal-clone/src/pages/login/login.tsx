@@ -1,4 +1,4 @@
-import { Box, Button, Grid, InputLabel, Link, TextField, Typography } from "@mui/material";
+import { Box, Button, InputLabel, Link, TextField, Typography } from "@mui/material";
 import axios from "axios";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -42,12 +42,13 @@ const Login: React.FC = () => {
     };
 
     return (
-        <Grid container style={{ height: '100vh' }}>
-            <Grid
-                item
-                xs={12}
-                md={6}
+        <Box sx={{
+            display: 'flex',
+            flexDirection: 'row',
+            height: '100vh' }}>
+            <Box
                 sx={{
+                    flex: 2,
                     backgroundImage: 'url(/images/bg.jpg)',
                     backgroundSize: 'cover',
                     backgroundPosition: 'center',
@@ -55,6 +56,7 @@ const Login: React.FC = () => {
                     alignItems: 'center',
                     justifyContent: 'center',
                 }}>
+
                 <Box sx={{
                     textAlign: 'center',
                     backgroundColor: 'rgba(255, 255, 255, 0.8)',
@@ -84,13 +86,11 @@ const Login: React.FC = () => {
                         Lorem ipsum dolor sit amet, consectetur adipisicing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
                     </Typography>
                 </Box>
-            </Grid>
+            </Box>
 
-            <Grid
-                item
-                xs={12}
-                md={6}
+            <Box
                 sx={{
+                    flex: 1,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -181,8 +181,8 @@ const Login: React.FC = () => {
                         Forgot username or password?
                     </Link>
                 </Box>
-            </Grid>
-        </Grid>
+            </Box>
+        </Box>
     );
 };
 
