@@ -1,4 +1,3 @@
-
 import { Box, Button, InputLabel, Link, TextField, Typography } from "@mui/material";
 import axios from "axios";
 import React, { useState } from "react";
@@ -98,7 +97,14 @@ export const ForgotPassword: React.FC = () => {
 
                 }}
             >
-                Remember your password? Back to Login
+                Remember your password? 
+                <Typography  
+                component="span" sx={{
+                    textDecoration: 'underline',
+                    cursor:'pointer',
+                    fontSize: '0.875rem'
+                }}>
+                    Back to Login </Typography>
             </Link>
         </Box>
     );

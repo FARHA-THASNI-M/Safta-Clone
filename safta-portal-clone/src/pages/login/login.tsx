@@ -158,7 +158,7 @@ const Login: React.FC = () => {
                     display: 'block',
                     marginTop: '20px',
                     textAlign: 'left',
-                    textDecoration: 'none',
+                    textDecoration: 'underline',
                     cursor: 'pointer',
                     color: 'black',
                     fontSize: '0.875rem'
