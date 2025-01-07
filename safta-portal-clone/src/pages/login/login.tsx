@@ -1,44 +1,58 @@
-import { Box, Button, InputLabel, Link, TextField, Typography } from "@mui/material";
+import {  Box, Button, InputLabel, Link, TextField, Typography } from "@mui/material";
 import axios from "axios";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+
 const Login: React.FC = () => {
     const navigate = useNavigate();
-    const [username, setUsername] = useState('');
-    const [password, setPassword] = useState('');
-    const [error, setError] = useState('');
-
+    const [userData, setUserData] = useState({ email: '', password: '' });
+    const [error, setError] = useState({ email: '', password: '', general: '' });
+    
     const handleLogin = async () => {
+        setError({ email: '', password: '', general: '' });
+        let valid = true;
+
+
+        if (!userData.email) {
+            setError(prevError => ({ ...prevError, email: 'Email is required' }));
+            valid = false;}
+        if (!userData.password) {
+            setError(prevError => ({ ...prevError, password: 'Password is required' }));
+            valid = false;}
+
+        if (!valid) return; 
         const requestData = {
-            email: username,
-            password: password
-        };
+            email: userData.email,
+            password: userData.password   };
 
         const headers = {
             'Content-Type': 'application/json',
-            'Accept': 'application/json',
-        };
+            'Accept': 'application/json', };
 
         try {
-            const response = await axios.post('https://dev-portal.safta.sa/api/v1/auth/login?lang=en', requestData, { headers })
+            const response = await axios.post('https://dev-portal.safta.sa/api/v1/auth/login?lang=en', requestData, { headers });
             if (response.status === 200) {
                 localStorage.setItem('isAuthenticated', 'true');
-                navigate('/dashboard')
+                navigate('/dashboard');
             } else {
-                setError('incorrect')
-            }
-        } catch (error) {
+                setError(prevError => ({ ...prevError, general: 'Incorrect email or password' }));
+            }}  catch (error) {
             console.error(error);
-            setError('Incorrect Email or Password');
-        }
-    };
+            setError(prevError => ({ ...prevError, general: 'Incorrect email or password' }));  } };
 
     const handleForgotPassword = (e: React.MouseEvent) => {
         e.preventDefault();
-        navigate('/forgot-password');
-    };
+        navigate('/forgot-password');};
 
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        setUserData(prevData => ({
+            ...prevData,
+            [name]: value  })); };
+
+
+  
     return (
         <Box sx={{ width: '100%', maxWidth: '400px' }}>
             <Typography
@@ -48,11 +62,8 @@ const Login: React.FC = () => {
                 sx={{
                     borderBottom: '3px solid black',
                     display: 'inline-block',
-                    marginBottom: '35px'
-                }}
-            >
-                Login
-            </Typography>
+                    marginBottom: '35px'   }} >
+                Login  </Typography>
             <InputLabel sx={{
                 marginBottom: '-8px',
                 fontSize: '14px',
@@ -63,8 +74,11 @@ const Login: React.FC = () => {
                 label=""
                 variant="outlined"
                 margin="normal"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                name="email"
+                value={userData.email}
+                onChange={handleChange}
+                error={!!error.email}
+                helperText={error.email}
                 sx={{
                     '& .MuiOutlinedInput-root': {
                         borderRadius: '14px'
@@ -83,17 +97,20 @@ const Login: React.FC = () => {
                 type="password"
                 variant="outlined"
                 margin="normal"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                name="password"
+                value={userData.password}
+                onChange={handleChange}
+                error={!!error.password}
+                helperText={error.password}
                 sx={{
                     '& .MuiOutlinedInput-root': {
                         borderRadius: '14px'
                     }
                 }}
             />
-            {error && (
+            {error.general && (
                 <Typography color="error" variant="body2" sx={{ mt: 1 }}>
-                    {error}
+                    {error.general}
                 </Typography>
             )}
             <Button
