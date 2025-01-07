@@ -12,7 +12,7 @@ import {Layout} from './layouts/login/layout';
 const theme = createTheme({
   palette: {
     primary: {
-      main: '#ff000',
+      main: '#ff00',
     },
     secondary: {
       main: '#333333',
@@ -44,11 +44,7 @@ const App: React.FC = () => {
             <Route path="/login" element={<Login />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
           </Route>
-
-          <Route
-            path="/dashboard"
-            element={<PrivateRoute element={<Dashboard />} />}
-          />
+          <Route path="/dashboard" element={<PrivateRoute element={<Dashboard />} />} />
         </Routes>
       </Router>
     </ThemeProvider>
