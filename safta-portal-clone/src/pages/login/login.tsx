@@ -1,8 +1,16 @@
 import { Box, Button, InputLabel, Link, TextField, Typography } from "@mui/material";
-import axios from "axios";
+import axios, { AxiosResponse } from "axios";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+
+
+interface LoginResponse {
+    message: string;
+    data: {
+        token?: string;
+    };
+}
 
 const Login: React.FC = () => {
     const navigate = useNavigate();
@@ -35,7 +43,7 @@ const Login: React.FC = () => {
         };
 
         try {
-            const response:any = await axios.post('https://dev-portal.safta.sa/api/v1/auth/login?lang=en', requestData, { headers })
+            const response: AxiosResponse<LoginResponse>= await axios.post('https://dev-portal.safta.sa/api/v1/auth/login?lang=en', requestData, { headers })
             
             
             if (response.status === 200) {
@@ -43,10 +51,14 @@ const Login: React.FC = () => {
                 localStorage.setItem('isAuthenticated', 'true');
                 navigate('/dashboard');
             } else {
-                toast.error(response? response.message : '');
+                toast.error(response.data.message );
             }
-        } catch (error:any) {
-            toast.error(error.response.data.message);
+        } catch (error) { 
+            if (axios.isAxiosError(error) && error.response) {
+                toast.error (error.response.data.message);
+            } else {
+                toast.error('An unexpected error occured')
+            }
         }
     };
 

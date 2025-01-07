@@ -11,7 +11,7 @@ export const Layout = () => {
             height: '100vh' }}>
             <Box
                 sx={{
-                    flex: 2,
+                    flex: 3,
                     backgroundImage: 'url(/images/bg.jpg)',
                     backgroundSize: 'cover',
                     backgroundPosition: 'center',
@@ -53,7 +53,7 @@ export const Layout = () => {
 
             <Box
                 sx={{
-                    flex: 1,
+                    flex: 2,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',

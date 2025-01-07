@@ -95,6 +95,7 @@ export const ForgotPassword: React.FC = () => {
                     cursor: 'pointer',
                     color: 'black',
                     fontSize: '0.875rem'
+
                 }}
             >
                 Remember your password? Back to Login
