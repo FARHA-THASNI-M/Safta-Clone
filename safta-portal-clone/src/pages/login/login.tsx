@@ -1,58 +1,68 @@
-import {  Box, Button, InputLabel, Link, TextField, Typography } from "@mui/material";
+import { Box, Button, InputLabel, Link, TextField, Typography } from "@mui/material";
 import axios from "axios";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-
+import { toast } from "react-toastify";
 
 const Login: React.FC = () => {
     const navigate = useNavigate();
     const [userData, setUserData] = useState({ email: '', password: '' });
-    const [error, setError] = useState({ email: '', password: '', general: '' });
+    const [error, setError] = useState({ email: '', password: '' });
     
     const handleLogin = async () => {
-        setError({ email: '', password: '', general: '' });
+        setError({ email: '', password: '' });
         let valid = true;
-
 
         if (!userData.email) {
             setError(prevError => ({ ...prevError, email: 'Email is required' }));
-            valid = false;}
+            valid = false;
+        }
         if (!userData.password) {
             setError(prevError => ({ ...prevError, password: 'Password is required' }));
-            valid = false;}
+            valid = false;
+        }
 
-        if (!valid) return; 
+        if (!valid) return;
+
         const requestData = {
             email: userData.email,
-            password: userData.password   };
+            password: userData.password
+        };
 
         const headers = {
             'Content-Type': 'application/json',
-            'Accept': 'application/json', };
+            'Accept': 'application/json',
+        };
 
         try {
-            const response = await axios.post('https://dev-portal.safta.sa/api/v1/auth/login?lang=en', requestData, { headers });
+            const response:any = await axios.post('https://dev-portal.safta.sa/api/v1/auth/login?lang=en', requestData, { headers })
+            
+            
             if (response.status === 200) {
+                toast.success(response.data.message)                
                 localStorage.setItem('isAuthenticated', 'true');
                 navigate('/dashboard');
             } else {
-                setError(prevError => ({ ...prevError, general: 'Incorrect email or password' }));
-            }}  catch (error) {
-            console.error(error);
-            setError(prevError => ({ ...prevError, general: 'Incorrect email or password' }));  } };
+                toast.error(response? response.message : '');
+            }
+        } catch (error:any) {
+            toast.error(error.response.data.message);
+        }
+    };
 
     const handleForgotPassword = (e: React.MouseEvent) => {
         e.preventDefault();
-        navigate('/forgot-password');};
+        navigate('/forgot-password');
+    };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         setUserData(prevData => ({
             ...prevData,
-            [name]: value  })); };
+            [name]: value
+        }));
+    };
 
-
-  
     return (
         <Box sx={{ width: '100%', maxWidth: '400px' }}>
             <Typography
@@ -62,8 +72,11 @@ const Login: React.FC = () => {
                 sx={{
                     borderBottom: '3px solid black',
                     display: 'inline-block',
-                    marginBottom: '35px'   }} >
-                Login  </Typography>
+                    marginBottom: '35px'
+                }} >
+                Login
+            </Typography>
+
             <InputLabel sx={{
                 marginBottom: '-8px',
                 fontSize: '14px',
@@ -85,6 +98,7 @@ const Login: React.FC = () => {
                     }
                 }}
             />
+
             <InputLabel sx={{
                 marginBottom: '-8px',
                 fontSize: '14px',
@@ -108,11 +122,7 @@ const Login: React.FC = () => {
                     }
                 }}
             />
-            {error.general && (
-                <Typography color="error" variant="body2" sx={{ mt: 1 }}>
-                    {error.general}
-                </Typography>
-            )}
+
             <Button
                 fullWidth
                 variant="contained"
@@ -128,6 +138,7 @@ const Login: React.FC = () => {
             >
                 Login
             </Button>
+
             <Link
                 href="/forgot-password"
                 onClick={handleForgotPassword}
@@ -143,6 +154,8 @@ const Login: React.FC = () => {
             >
                 Forgot username or password?
             </Link>
+
+            
         </Box>
     );
 };
