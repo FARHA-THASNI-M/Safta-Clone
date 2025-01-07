@@ -1,4 +1,4 @@
-import { Box } from "@mui/material";
+import { AppBar, Toolbar} from "@mui/material";
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -26,13 +26,23 @@ const Header: React.FC = () => {
     localStorage.removeItem('isAuthenticated'); 
     navigate('/login'); 
   };
+
+  
+
+
   return (
-    <Box sx={{
-    }}>
+    <AppBar position="static">
+      <Toolbar
+      sx={{
+        justifyContent: 'space-between'
+      }}>
         Header
 
-      <button onClick={handleLogout}>Logout</button>
-    </Box>
+    
+      <button 
+      onClick={handleLogout}>Logout</button>
+      </Toolbar>
+    </AppBar>
   )
 }
 
