@@ -3,10 +3,11 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { CssBaseline } from '@mui/material';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/login/login';
-import Dashboard from './pages/dashboard/dashboard';
+import Dashboard from './pages/dashboard/home';
 import PrivateRoute from './components/PrivateRoute';
 import { ForgotPassword } from './pages/ForgotPassword/ForgotPassword';
-import {Layout} from './layouts/login/layout';
+import {LoginLayout} from './layouts/login/layout';
+import { DashboardLayout } from './layouts/dashboard/layout';
 
 
 const theme = createTheme({
@@ -39,12 +40,14 @@ const App: React.FC = () => {
       <CssBaseline />
       <Router>
         <Routes>
-          <Route element={<Layout />}>
+          <Route element={<LoginLayout />}>
             <Route path="/" element={<Navigate to="/login" replace />} />
             <Route path="/login" element={<Login />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
           </Route>
+          <Route element={<DashboardLayout />}>
           <Route path="/dashboard" element={<PrivateRoute element={<Dashboard />} />} />
+          </Route>
         </Routes>
       </Router>
     </ThemeProvider>

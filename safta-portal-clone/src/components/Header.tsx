@@ -1,7 +1,10 @@
+import { Box } from "@mui/material";
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const Dashboard: React.FC = () => {
+
+const Header = () => {
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -23,13 +26,14 @@ const Dashboard: React.FC = () => {
     localStorage.removeItem('isAuthenticated'); 
     navigate('/login'); 
   };
-
   return (
-    <div>
-      <h1>Dashboard</h1>
-      <button onClick={handleLogout}>Logout</button>
-    </div>
-  );
-};
+    <Box sx={{
+    }}>
+        Header
 
-export default Dashboard;
+      <button onClick={handleLogout}>Logout</button>
+    </Box>
+  )
+}
+
+export default Header;

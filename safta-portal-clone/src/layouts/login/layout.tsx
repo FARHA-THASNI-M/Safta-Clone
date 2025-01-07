@@ -3,7 +3,7 @@ import { Box } from "@mui/material";
 import { Outlet } from "react-router-dom";
 import { Typography } from "@mui/material";
 
-export const Layout = () => {
+export const LoginLayout = () => {
     return (
         <Box sx={{
             display: 'flex',
