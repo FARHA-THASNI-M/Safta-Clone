@@ -142,20 +142,17 @@ export default function DashboardLayout() {
             <MenuIcon />
           </IconButton>
 
-          {/* Title Text */}
           <Typography
             variant="h6"
             noWrap
             component="div"
             sx={{
-              marginLeft: 1, // Adjusted to create space between the drawer icon and the text
-              flexGrow: 1,   // Ensures the title takes up remaining space without pushing other elements
-            }}
+              marginLeft: 1, 
+              flexGrow: 1,    }}
           >
             Mini variant drawer
           </Typography>
 
-          {/* Logout Button */}
           <button onClick={handleLogout}>Logout</button>
         </Toolbar>
       </AppBar>
