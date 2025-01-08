@@ -126,7 +126,6 @@ export default function DashboardLayout() {
       <CssBaseline />
       <AppBar position="fixed" open={open}>
         <Toolbar sx={{ justifyContent: 'flex-start', paddingLeft: 2 }}>
-          {/* Menu Button */}
           <IconButton
             color="inherit"
             aria-label="open drawer"
