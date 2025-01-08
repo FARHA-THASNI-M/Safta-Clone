@@ -7,7 +7,7 @@ import Dashboard from './pages/dashboard/home';
 import PrivateRoute from './components/PrivateRoute';
 import { ForgotPassword } from './pages/ForgotPassword/ForgotPassword';
 import {LoginLayout} from './layouts/login/layout';
-import { DashboardLayout } from './layouts/dashboard/layout';
+import  DashboardLayout  from './layouts/dashboard/layout';
 
 
 const theme = createTheme({
