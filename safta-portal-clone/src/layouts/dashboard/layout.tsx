@@ -18,7 +18,7 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import InboxIcon from '@mui/icons-material/MoveToInbox';
 import MailIcon from '@mui/icons-material/Mail';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useNavigate } from 'react-router-dom';
 
 const drawerWidth = 240;
 
@@ -106,6 +106,7 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
 export default function DashboardLayout() {
   const theme = useTheme();
   const [open, setOpen] = React.useState(false);
+  const navigate = useNavigate();
 
   const handleDrawerOpen = () => {
     setOpen(true);
@@ -115,11 +116,17 @@ export default function DashboardLayout() {
     setOpen(false);
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem('isAuthenticated'); 
+    navigate('/login');
+  };
+
   return (
     <Box sx={{ display: 'flex' }}>
       <CssBaseline />
       <AppBar position="fixed" open={open}>
-        <Toolbar>
+        <Toolbar sx={{ justifyContent: 'flex-start', paddingLeft: 2 }}>
+          {/* Menu Button */}
           <IconButton
             color="inherit"
             aria-label="open drawer"
@@ -134,9 +141,22 @@ export default function DashboardLayout() {
           >
             <MenuIcon />
           </IconButton>
-          <Typography variant="h6" noWrap component="div">
+
+          {/* Title Text */}
+          <Typography
+            variant="h6"
+            noWrap
+            component="div"
+            sx={{
+              marginLeft: 1, // Adjusted to create space between the drawer icon and the text
+              flexGrow: 1,   // Ensures the title takes up remaining space without pushing other elements
+            }}
+          >
             Mini variant drawer
           </Typography>
+
+          {/* Logout Button */}
+          <button onClick={handleLogout}>Logout</button>
         </Toolbar>
       </AppBar>
       <Drawer variant="permanent" open={open}>
@@ -251,10 +271,8 @@ export default function DashboardLayout() {
         </List>
       </Drawer>
       <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
-
         <DrawerHeader />
-
-        <Outlet/>
+        <Outlet />
       </Box>
     </Box>
   );
