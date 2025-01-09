@@ -200,8 +200,6 @@ export default function DashboardLayout() {
             />
           )}
         </DrawerHeader>
-
-        <Divider />
         <List>
           {menuItems.map(({ text, to, icon }) => (
             <ListItem key={text} disablePadding sx={{ display: 'block' }}>
