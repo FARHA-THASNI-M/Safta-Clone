@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { styled, useTheme, Theme, CSSObject } from '@mui/material/styles';
+import { styled, Theme, CSSObject } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import MuiDrawer from '@mui/material/Drawer';
 import MuiAppBar, { AppBarProps as MuiAppBarProps } from '@mui/material/AppBar';
@@ -9,28 +9,27 @@ import CssBaseline from '@mui/material/CssBaseline';
 import Typography from '@mui/material/Typography';
 import Divider from '@mui/material/Divider';
 import IconButton from '@mui/material/IconButton';
-import MenuIcon from '@mui/icons-material/Menu';
-import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
-import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import KeyboardDoubleArrowLeftIcon from '@mui/icons-material/KeyboardDoubleArrowLeft';
+import KeyboardDoubleArrowRightIcon from '@mui/icons-material/KeyboardDoubleArrowRight';
 import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import { Outlet, useNavigate, Link} from 'react-router-dom';
+import { Outlet, useNavigate, Link } from 'react-router-dom';
 import { AccountBalance, AccountCircle, Article, FileCopy, Groups3, Home, InsertLink, People } from '@mui/icons-material';
 
 const drawerWidth = 240;
 
 const menuItems = [
-    {text :'Home', to: '/dashboard', icon: <Home/>},
-    {text :'Working Groups', to: '/dashboard/working-groups', icon: <People/>},
-    {text :'Members', to: '/dashboard/members', icon: <AccountBalance/>},
-    {text :'Users', to: '/dashboard/users', icon: <AccountCircle/>},
-    {text :'Documents', to: '/dashboard/documents', icon: <FileCopy/>},
-    {text :'Meetings', to: '/dashboard/meetings', icon: <Groups3/>},
-    {text :'News', to: '/dashboard/news', icon: <Article/>},
-    {text :'Links', to: '/dashboard/links', icon: <InsertLink/>}
-]
+  { text: 'Home', to: '/dashboard', icon: <Home /> },
+  { text: 'Working Groups', to: '/dashboard/working-groups', icon: <People /> },
+  { text: 'Members', to: '/dashboard/members', icon: <AccountBalance /> },
+  { text: 'Users', to: '/dashboard/users', icon: <AccountCircle /> },
+  { text: 'Documents', to: '/dashboard/documents', icon: <FileCopy /> },
+  { text: 'Meetings', to: '/dashboard/meetings', icon: <Groups3 /> },
+  { text: 'News', to: '/dashboard/news', icon: <Article /> },
+  { text: 'Links', to: '/dashboard/links', icon: <InsertLink /> }
+];
 
 const openedMixin = (theme: Theme): CSSObject => ({
   width: drawerWidth,
@@ -114,20 +113,15 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
 );
 
 export default function DashboardLayout() {
-  const theme = useTheme();
   const [open, setOpen] = React.useState(false);
   const navigate = useNavigate();
 
-  const handleDrawerOpen = () => {
-    setOpen(true);
-  };
-
-  const handleDrawerClose = () => {
-    setOpen(false);
+  const handleDrawerToggle = () => {
+    setOpen(!open);
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('isAuthenticated'); 
+    localStorage.removeItem('isAuthenticated');
     navigate('/login');
   };
 
@@ -136,28 +130,28 @@ export default function DashboardLayout() {
       <CssBaseline />
       <AppBar position="fixed" open={open}>
         <Toolbar sx={{ justifyContent: 'flex-start', paddingLeft: 2 }}>
-          <IconButton
-            color="inherit"
-            aria-label="open drawer"
-            onClick={handleDrawerOpen}
-            edge="start"
-            sx={[
-              {
+          {!open && (
+            <IconButton
+              color="inherit"
+              aria-label="toggle drawer"
+              onClick={handleDrawerToggle}
+              edge="start"
+              sx={{
                 marginRight: 5,
-              },
-              open && { display: 'none' },
-            ]}
-          >
-            <MenuIcon />
-          </IconButton>
+              }}
+            >
+              <KeyboardDoubleArrowRightIcon />
+            </IconButton>
+          )}
 
           <Typography
             variant="h6"
             noWrap
             component="div"
             sx={{
-              marginLeft: 1, 
-              flexGrow: 1,    }}
+              marginLeft: 1,
+              flexGrow: 1,
+            }}
           >
             Home
           </Typography>
@@ -167,37 +161,39 @@ export default function DashboardLayout() {
       </AppBar>
       <Drawer variant="permanent" open={open}>
         <DrawerHeader>
-          <IconButton onClick={handleDrawerClose}>
-            {theme.direction === 'rtl' ? <ChevronRightIcon /> : <ChevronLeftIcon />}
-          </IconButton>
+          {open && (
+            <IconButton onClick={handleDrawerToggle}>
+              <KeyboardDoubleArrowLeftIcon />
+            </IconButton>
+          )}
         </DrawerHeader>
+
         <Divider />
         <List>
-  {menuItems.map(({ text, to, icon }, index) => (
-    <ListItem key={text} disablePadding sx={{ display: 'block' }}>
-      <ListItemButton
-        component={Link} 
-        to={to}>
-        <ListItemIcon 
-        sx={{ 
-            minWidth: 0,
-            justifyContent: 'center',
-            mr: open ? 3 : 'auto',
-        }}>
-            {icon}
-            </ListItemIcon>
-            <ListItemText
-          primary={text}
-          sx={{
-            opacity: open ? 1 : 0,
-          }}
-        />
-      </ListItemButton>
-    </ListItem>
-  ))}
-  </List>
-
+          {menuItems.map(({ text, to, icon }) => (
+            <ListItem key={text} disablePadding sx={{ display: 'block' }}>
+              <ListItemButton component={Link} to={to}>
+                <ListItemIcon
+                  sx={{
+                    minWidth: 0,
+                    justifyContent: 'center',
+                    mr: open ? 3 : 'auto',
+                  }}
+                >
+                  {icon}
+                </ListItemIcon>
+                <ListItemText
+                  primary={text}
+                  sx={{
+                    opacity: open ? 1 : 0,
+                  }}
+                />
+              </ListItemButton>
+            </ListItem>
+          ))}
+        </List>
       </Drawer>
+
       <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
         <DrawerHeader />
         <Outlet />
