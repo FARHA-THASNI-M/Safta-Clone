@@ -15,7 +15,7 @@ import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import { Outlet, useNavigate, Link } from 'react-router-dom';
+import { Outlet, useNavigate, Link, useLocation } from 'react-router-dom';
 import { AccountBalance, AccountCircle, Article, FileCopy, Groups3, Home, InsertLink, People } from '@mui/icons-material';
 
 const drawerWidth = 240;
@@ -55,8 +55,8 @@ const closedMixin = (theme: Theme): CSSObject => ({
 const DrawerHeader = styled('div')(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
-  justifyContent: 'flex-end',
   padding: theme.spacing(0, 1),
+  height: '64px',
   ...theme.mixins.toolbar,
 }));
 
@@ -115,6 +115,7 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
 export default function DashboardLayout() {
   const [open, setOpen] = React.useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleDrawerToggle = () => {
     setOpen(!open);
@@ -125,46 +126,78 @@ export default function DashboardLayout() {
     navigate('/login');
   };
 
+  const currentPage = menuItems.find(item => item.to === location.pathname)?.text ;
+
   return (
     <Box sx={{ display: 'flex' }}>
       <CssBaseline />
       <AppBar position="fixed" open={open}>
         <Toolbar sx={{ justifyContent: 'flex-start', paddingLeft: 2 }}>
-          {!open && (
-            <IconButton
-              color="inherit"
-              aria-label="toggle drawer"
-              onClick={handleDrawerToggle}
-              edge="start"
-              sx={{
-                marginRight: 5,
-              }}
-            >
-              <KeyboardDoubleArrowRightIcon />
-            </IconButton>
-          )}
-
+          <IconButton
+            color="inherit"
+            aria-label="toggle drawer"
+            onClick={handleDrawerToggle}
+            edge="start"
+            sx={{ ml: 1 }}
+          >
+            {open ? <KeyboardDoubleArrowLeftIcon /> : <KeyboardDoubleArrowRightIcon />}
+          </IconButton>
           <Typography
             variant="h6"
             noWrap
             component="div"
             sx={{
               marginLeft: 1,
-              flexGrow: 1,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1
             }}
           >
-            Home
+            {currentPage}
           </Typography>
 
-          <button onClick={handleLogout}>Logout</button>
+          <Box sx={{ flexGrow: 1 }} />
+          <button
+            onClick={handleLogout}
+            style={{
+              marginLeft: open ? 'auto' : '0', 
+              padding: '6px 12px',
+              background: 'none',
+              border: '1px solid #ccc',
+              cursor: 'pointer'
+            }}
+          >
+            Logout
+          </button>
         </Toolbar>
       </AppBar>
+
       <Drawer variant="permanent" open={open}>
         <DrawerHeader>
-          {open && (
-            <IconButton onClick={handleDrawerToggle}>
-              <KeyboardDoubleArrowLeftIcon />
-            </IconButton>
+          {open ? (
+            <Box
+              component="img"
+              src="/images/logo.svg"
+              alt="Logo 1"
+              sx={{
+                height: 40,
+                width: 'auto',
+                display: 'block',
+                margin: '0 auto'
+              }}
+            />
+          ) : (
+            <Box
+              component="img"
+              src="/images/Logo1.png"
+              alt="Logo 2"
+              sx={{
+                height: 40,
+                width: 'auto',
+                display: 'block',
+                margin: '0 auto'
+              }}
+            />
           )}
         </DrawerHeader>
 
