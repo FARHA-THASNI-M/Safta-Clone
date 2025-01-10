@@ -4,12 +4,17 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
-
 interface LoginResponse {
     message: string;
     data: {
+        user: {
+
         token?: string;
-    };
+        email?: string;
+        login_name?: string; 
+    }
+    accessToken: string;
+        }
 }
 
 const Login: React.FC = () => {
@@ -20,7 +25,7 @@ const Login: React.FC = () => {
     const handleLogin = async () => {
         setError({ email: '', password: '' });
         let valid = true;
-
+    
         if (!userData.email) {
             setError(prevError => ({ ...prevError, email: 'Email is required' }));
             valid = false;
@@ -29,38 +34,61 @@ const Login: React.FC = () => {
             setError(prevError => ({ ...prevError, password: 'Password is required' }));
             valid = false;
         }
-
+    
         if (!valid) return;
-
+    
         const requestData = {
             email: userData.email,
             password: userData.password
         };
-
+    
         const headers = {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
         };
-
+    
         try {
-            const response: AxiosResponse<LoginResponse>= await axios.post('https://dev-portal.safta.sa/api/v1/auth/login?lang=en', requestData, { headers })
-            
-            
-            if (response.status === 200) {
-                toast.success(response.data.message)                
+            const response: AxiosResponse<LoginResponse> = await axios.post(
+                'https://dev-portal.safta.sa/api/v1/auth/login?lang=en', 
+                requestData, 
+                { headers }
+            );
+    
+            console.log('API Response:', response);
+    
+            console.log('API Response Data:', response.data); 
+            console.log('API Response Data Data:', response.data.data); 
+    
+            if (response.data.data) {
+                console.log('Login Name:', response.data.data.user.login_name); 
+                console.log('Email:', response.data.data.user.email); 
+                console.log('Token:', response.data.data.accessToken); 
+            } else {
+                console.log('No data found in response');
+            }
+    
+            if (response.status === 200 && response.data.data) {
+                console.log('Setting data in localStorage...');
                 localStorage.setItem('isAuthenticated', 'true');
+                localStorage.setItem('userLoginName', response.data.data.user.login_name || '');
+                localStorage.setItem('userEmail', response.data.data.user.email || '');
+                localStorage.setItem('userToken', response.data.data.accessToken || '');
+    
+                toast.success(response.data.message);
                 navigate('/dashboard');
             } else {
-                toast.error(response.data.message );
+                toast.error(response.data.message);
             }
-        } catch (error) { 
+        } catch (error) {
             if (axios.isAxiosError(error) && error.response) {
-                toast.error (error.response.data.message);
+                toast.error(error.response.data.message);
             } else {
-                toast.error('An unexpected error occured')
+                toast.error('An unexpected error occurred');
             }
         }
     };
+    
+    
 
     const handleForgotPassword = (e: React.MouseEvent) => {
         e.preventDefault();
@@ -166,8 +194,6 @@ const Login: React.FC = () => {
             >
                 Forgot username or password?
             </Link>
-
-            
         </Box>
     );
 };

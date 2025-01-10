@@ -1,34 +1,16 @@
-
 import * as React from 'react';
-import axios from 'axios';
 import { Box, IconButton, Menu, MenuItem, Avatar, Typography } from '@mui/material';
 import { Close } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 
-interface UserProfile {
-  name: string;
-  email: string;
-  avatar?: string;
-}
-
 const UserProfile = () => {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-  const [userProfile, setUserProfile] = React.useState<UserProfile | null>(null);
   const navigate = useNavigate();
   const open = Boolean(anchorEl);
 
-  React.useEffect(() => {
-    const fetchUserProfile = async () => {
-      try {
-        const response = await axios.get('/api/user/profile');
-        setUserProfile(response.data);
-      } catch (error) {
-        console.error('Error fetching user profile:', error);
-      }
-    };
-
-    fetchUserProfile();
-  }, []);
+  // Retrieve login_name and email from localStorage
+  const loginName = localStorage.getItem('userLoginName') || 'User';
+  const email = localStorage.getItem('userEmail') || 'user@example.com';
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -40,6 +22,9 @@ const UserProfile = () => {
 
   const handleLogout = () => {
     localStorage.removeItem('isAuthenticated');
+    localStorage.removeItem('userLoginName');
+    localStorage.removeItem('userEmail');
+    localStorage.removeItem('userToken');
     navigate('/login');
     handleClose();
   };
@@ -51,14 +36,14 @@ const UserProfile = () => {
         size="small"
         sx={{ ml: 2 }}
       >
-        <Avatar 
-          sx={{ 
-            width: 32, 
+        <Avatar
+          sx={{
+            width: 32,
             height: 32,
             bgcolor: 'grey.300'
           }}
         >
-          P
+          {loginName.charAt(0).toUpperCase()} {/* Display first letter of login_name */}
         </Avatar>
       </IconButton>
       <Menu
@@ -69,7 +54,7 @@ const UserProfile = () => {
           elevation: 0,
           sx: {
             width: 320,
-            maxHeight: '100vh', 
+            maxHeight: '100vh',
             overflow: 'hidden',
             filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.08))',
             padding: 0,
@@ -85,8 +70,8 @@ const UserProfile = () => {
             flexDirection: 'column',
             alignItems: 'center',
             p: 3,
-            height: '100vh', 
-            position: 'relative', 
+            height: '100vh',
+            position: 'relative',
           }}
         >
           <IconButton
@@ -110,7 +95,7 @@ const UserProfile = () => {
               fontSize: '1.5rem',
             }}
           >
-            P
+            {loginName.charAt(0).toUpperCase()} {/* Display first letter of login_name */}
           </Avatar>
           <Typography
             variant="h6"
@@ -120,7 +105,7 @@ const UserProfile = () => {
               mb: 0.5,
             }}
           >
-            Project Zoftcares
+            {loginName} {/* Display login_name from localStorage */}
           </Typography>
           <Typography
             variant="body2"
@@ -129,7 +114,7 @@ const UserProfile = () => {
               mb: 2,
             }}
           >
-            project@zoftcares.com
+            {email} {/* Display email from localStorage */}
           </Typography>
           <Box
             sx={{
