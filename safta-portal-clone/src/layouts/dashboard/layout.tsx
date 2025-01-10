@@ -12,7 +12,6 @@ import IconButton from '@mui/material/IconButton';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Avatar from '@mui/material/Avatar';
-import Divider from '@mui/material/Divider';
 import KeyboardDoubleArrowLeftIcon from '@mui/icons-material/KeyboardDoubleArrowLeft';
 import KeyboardDoubleArrowRightIcon from '@mui/icons-material/KeyboardDoubleArrowRight';
 import ListItem from '@mui/material/ListItem';
@@ -21,6 +20,7 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { Outlet, useNavigate, Link, useLocation } from 'react-router-dom';
 import { AccountBalance, AccountCircle, Article, FileCopy, Groups3, Home, InsertLink, People } from '@mui/icons-material';
+import { Close } from '@mui/icons-material'; // Import Close icon
 
 const drawerWidth = 240;
 
@@ -163,17 +163,15 @@ const ProfileMenu = () => {
         anchorEl={anchorEl}
         open={open}
         onClose={handleClose}
-        onClick={handleClose}
         PaperProps={{
           elevation: 0,
           sx: {
             width: 320,
-            overflow: 'visible',
+            maxHeight: '100vh', 
+            overflow: 'hidden',
             filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.08))',
-            mt: 1.5,
-            '& .MuiList-root': {
-              padding: 0,
-            },
+            padding: 0,
+            borderRadius: 0,
           },
         }}
         transformOrigin={{ horizontal: 'right', vertical: 'top' }}
@@ -185,8 +183,23 @@ const ProfileMenu = () => {
             flexDirection: 'column',
             alignItems: 'center',
             p: 3,
+            height: '100vh', 
+            position: 'relative',
           }}
         >
+          {/* Close button */}
+          <IconButton
+            onClick={handleClose}
+            sx={{
+              position: 'absolute',
+              top: 10,
+              left: 10,
+              color: 'text.secondary',
+            }}
+          >
+            <Close />
+          </IconButton>
+
           <Avatar
             sx={{
               width: 64,
