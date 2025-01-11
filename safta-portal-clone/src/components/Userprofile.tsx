@@ -8,7 +8,6 @@ const UserProfile = () => {
   const navigate = useNavigate();
   const open = Boolean(anchorEl);
 
-  // Retrieve login_name and email from localStorage
   const loginName = localStorage.getItem('userLoginName') || 'User';
   const email = localStorage.getItem('userEmail') || 'user@example.com';
 
@@ -33,8 +32,8 @@ const UserProfile = () => {
     <Box sx={{ display: 'flex', alignItems: 'center' }}>
       <IconButton
         onClick={handleClick}
-        size="small"
-        sx={{ ml: 2 }}
+        size="small" 
+        sx={{ ml: 2 }}    
       >
         <Avatar
           sx={{
@@ -43,7 +42,7 @@ const UserProfile = () => {
             bgcolor: 'grey.300'
           }}
         >
-          {loginName.charAt(0).toUpperCase()} {/* Display first letter of login_name */}
+          {loginName.charAt(0).toUpperCase()} 
         </Avatar>
       </IconButton>
       <Menu
@@ -72,6 +71,7 @@ const UserProfile = () => {
             p: 3,
             height: '100vh',
             position: 'relative',
+            justifyContent: 'space-between',
           }}
         >
           <IconButton
@@ -86,40 +86,42 @@ const UserProfile = () => {
             <Close />
           </IconButton>
 
-          <Avatar
-            sx={{
-              width: 64,
-              height: 64,
-              mb: 2,
-              bgcolor: 'grey.800',
-              fontSize: '1.5rem',
-            }}
-          >
-            {loginName.charAt(0).toUpperCase()} {/* Display first letter of login_name */}
-          </Avatar>
-          <Typography
-            variant="h6"
-            sx={{
-              fontSize: '1rem',
-              fontWeight: 500,
-              mb: 0.5,
-            }}
-          >
-            {loginName} {/* Display login_name from localStorage */}
-          </Typography>
-          <Typography
-            variant="body2"
-            sx={{
-              color: 'text.secondary',
-              mb: 2,
-            }}
-          >
-            {email} {/* Display email from localStorage */}
-          </Typography>
+          <Box sx={{ flexGrow: 1, textAlign: 'center' }}>
+            <Avatar
+              sx={{
+                width: 64,
+                height: 64,
+                mb: 2,
+                bgcolor: 'grey.800',
+                fontSize: '1.5rem',
+              }}
+            >
+              {loginName.charAt(0).toUpperCase()} 
+            </Avatar>
+            <Typography
+              variant="h6"
+              sx={{
+                fontSize: '1rem',
+                fontWeight: 500,
+                mb: 0.5,
+              }}
+            >
+              {loginName} 
+            </Typography>
+            <Typography
+              variant="body2"
+              sx={{
+                color: 'text.secondary',
+                mb: 2,
+              }}
+            >
+              {email} 
+            </Typography>
+          </Box>
+
           <Box
             sx={{
               width: '100%',
-              mt: 1,
             }}
           >
             <MenuItem
