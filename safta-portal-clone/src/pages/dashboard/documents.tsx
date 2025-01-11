@@ -27,7 +27,6 @@ import {
   Delete as DeleteIcon,
 } from "@mui/icons-material";
 
-// Row Data
 interface RowData {
   id: number;
   documentTitle: string;
@@ -38,7 +37,6 @@ interface RowData {
   isPublic: boolean;
 }
 
-// Sample Data
 const rows: RowData[] = [
   {
     id: 1,
@@ -82,7 +80,6 @@ export default function FilterableTable() {
   const emptyRows =
     page > 0 ? Math.max(0, (1 + page) * rowsPerPage - filteredRows.length) : 0;
 
-  // Change page handler
   const handleChangePage = (
     event: React.MouseEvent<HTMLButtonElement> | null, 
     newPage: number
@@ -90,21 +87,17 @@ export default function FilterableTable() {
     setPage(newPage);
   };
 
-  // Change rows per page handler
   const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
   };
 
-  // Filter change handler for Select fields
   const handleFilterChange = (event: SelectChangeEvent<string>) => {
     const { name, value } = event.target;
 
-    // Update filter state
     const newFilters = { ...filters, [name!]: value };
     setFilters(newFilters);
 
-    // Filter data based on the updated filter values
     const filtered = rows.filter((row) => {
       const matchesWorkingGroup = newFilters.workingGroup === "" || row.workingGroup === newFilters.workingGroup;
       const matchesStatus = newFilters.status === "" || row.status === newFilters.status;
@@ -113,12 +106,10 @@ export default function FilterableTable() {
       return matchesWorkingGroup && matchesStatus && matchesDate;
     });
 
-    // Update filtered rows and reset to first page
     setFilteredRows(filtered);
     setPage(0);
   };
 
-  // Reset filters handler
   const handleResetFilters = () => {
     setFilters({
       workingGroup: "",
@@ -131,7 +122,6 @@ export default function FilterableTable() {
 
   return (
     <Box>
-      {/* Filters */}
       <Box display="flex" alignItems="center" gap={2} mb={2}>
         <TextField
           label="Date"
@@ -139,7 +129,7 @@ export default function FilterableTable() {
           name="date"
           InputLabelProps={{ shrink: true }}
           value={filters.date}
-          onChange={(e) => handleFilterChange({ target: { name: 'date', value: e.target.value } } as SelectChangeEvent<string>)} // Adjusted to match SelectChangeEvent
+          onChange={(e) => handleFilterChange({ target: { name: 'date', value: e.target.value } } as SelectChangeEvent<string>)} 
         />
         <Select
           name="workingGroup"
@@ -162,7 +152,7 @@ export default function FilterableTable() {
           <MenuItem value="Pending">Pending</MenuItem>
           <MenuItem value="Rejected">Rejected</MenuItem>
         </Select>
-        <Button variant="outlined" onClick={handleResetFilters}>
+        <Button variant="outlined" onClick={handleResetFilters} sx={{ backgroundColor:'lightgray', color:'white'}}>
           Reset
         </Button>
       </Box>
@@ -242,8 +232,6 @@ export default function FilterableTable() {
     </Box>
   );
 }
-
-// Custom Pagination Actions
 function TablePaginationActions(props: any) {
   const { count, page, rowsPerPage, onPageChange } = props;
 
