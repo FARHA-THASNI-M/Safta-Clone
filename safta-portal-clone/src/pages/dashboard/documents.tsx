@@ -137,7 +137,7 @@ export default function FilterableTable() {
           onChange={handleFilterChange}
           displayEmpty
         >
-          <MenuItem value="">All Working Groups</MenuItem>
+          <MenuItem value="">Working Groups</MenuItem>
           <MenuItem value="Group 1">Group 1</MenuItem>
           <MenuItem value="Group 2">Group 2</MenuItem>
         </Select>
@@ -147,7 +147,7 @@ export default function FilterableTable() {
           onChange={handleFilterChange}
           displayEmpty
         >
-          <MenuItem value="">All Status</MenuItem>
+          <MenuItem value="">Status</MenuItem>
           <MenuItem value="Approved">Approved</MenuItem>
           <MenuItem value="Pending">Pending</MenuItem>
           <MenuItem value="Rejected">Rejected</MenuItem>
