@@ -1,9 +1,9 @@
 import { Box, Button, InputLabel, Link, TextField, Typography } from "@mui/material";
-import axios, { AxiosResponse } from "axios";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import instance from '../../api/axios'
+import { AxiosResponse } from "axios";
 
 interface LoginResponse {
     message: string;
@@ -84,23 +84,26 @@ const Login: React.FC = () => {
         //     }
         // }
         try {
-            await instance({
-              url: "/auth/login?lang=en",
-              method: "POST",
-              data: requestData,
-            }).then((response) => {
-              localStorage.setItem('isAuthenticated', 'true');
+            const response: AxiosResponse<LoginResponse> = await instance({
+                url: "/auth/login?lang=en",   
+                method: "POST",              
+                data: requestData, 
+            })
+            if (response.data && response.data.data) {
+                localStorage.setItem('isAuthenticated', 'true');
                 localStorage.setItem('userLoginName', response.data.data.user.login_name || '');
                 localStorage.setItem('userEmail', response.data.data.user.email || '');
                 localStorage.setItem('userToken', response.data.data.accessToken || '');
-    
+        
                 toast.success(response.data.message);
                 navigate('/dashboard');
-
-            });
-          } catch (e) {
+            } else {
+                console.log('No data found in response');
+            }
+        
+        } catch (e) {
             console.error(e);
-          }
+        }
     };
     
     
