@@ -3,7 +3,7 @@ import axios, { AxiosResponse } from "axios";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-
+import baseURL from '../../api/axios'
 interface LoginResponse {
     message: string;
     data: {
@@ -49,7 +49,7 @@ const Login: React.FC = () => {
     
         try {
             const response: AxiosResponse<LoginResponse> = await axios.post(
-                'https://dev-portal.safta.sa/api/v1/auth/login?lang=en', 
+                `${baseURL}auth/login?lang=en`, 
                 requestData, 
                 { headers }
             );
