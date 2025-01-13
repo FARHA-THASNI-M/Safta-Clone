@@ -1,5 +1,8 @@
 import axios from 'axios';
 
-export default axios.create({
-    baseURL: 'https://dev-portal.safta.sa/api'
-})
+
+const instance = axios.create({
+    baseURL: 'https://dev-portal.safta.sa/api/v1'
+   
+  });
+  export default instance

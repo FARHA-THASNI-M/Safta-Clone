@@ -3,7 +3,8 @@ import axios, { AxiosResponse } from "axios";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import baseURL from '../../api/axios'
+import instance from '../../api/axios'
+
 interface LoginResponse {
     message: string;
     data: {
@@ -42,50 +43,64 @@ const Login: React.FC = () => {
             password: userData.password
         };
     
-        const headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-        };
+      
+        // try {
+        //     const response: AxiosResponse<LoginResponse> = await axios.post(
+        //         `${baseURL}/auth/login?lang=en`, 
+        //         requestData, 
+        //         { headers }
+        //     );
     
+        //     console.log('API Response:', response);
+    
+        //     console.log('API Response Data:', response.data); 
+        //     console.log('API Response Data Data:', response.data.data); 
+    
+        //     if (response.data.data) {
+        //         console.log('Login Name:', response.data.data.user.login_name); 
+        //         console.log('Email:', response.data.data.user.email); 
+        //         console.log('Token:', response.data.data.accessToken); 
+        //     } else {
+        //         console.log('No data found in response');
+        //     }
+    
+        //     if (response.status === 200 && response.data.data) {
+        //         console.log('Setting data in localStorage...');
+        //         localStorage.setItem('isAuthenticated', 'true');
+        //         localStorage.setItem('userLoginName', response.data.data.user.login_name || '');
+        //         localStorage.setItem('userEmail', response.data.data.user.email || '');
+        //         localStorage.setItem('userToken', response.data.data.accessToken || '');
+    
+        //         toast.success(response.data.message);
+        //         navigate('/dashboard');
+        //     } else {
+        //         toast.error(response.data.message);
+        //     }
+        // } catch (error) {
+        //     if (axios.isAxiosError(error) && error.response) {
+        //         toast.error(error.response.data.message);
+        //     } else {
+        //         toast.error('An unexpected error occurred');
+        //     }
+        // }
         try {
-            const response: AxiosResponse<LoginResponse> = await axios.post(
-                'https://dev-portal.safta.sa/api/v1/auth/login?lang=en', 
-                requestData, 
-                { headers }
-            );
-    
-            console.log('API Response:', response);
-    
-            console.log('API Response Data:', response.data); 
-            console.log('API Response Data Data:', response.data.data); 
-    
-            if (response.data.data) {
-                console.log('Login Name:', response.data.data.user.login_name); 
-                console.log('Email:', response.data.data.user.email); 
-                console.log('Token:', response.data.data.accessToken); 
-            } else {
-                console.log('No data found in response');
-            }
-    
-            if (response.status === 200 && response.data.data) {
-                console.log('Setting data in localStorage...');
-                localStorage.setItem('isAuthenticated', 'true');
+            await instance({
+              url: "/auth/login?lang=en",
+              method: "POST",
+              data: requestData,
+            }).then((response) => {
+              localStorage.setItem('isAuthenticated', 'true');
                 localStorage.setItem('userLoginName', response.data.data.user.login_name || '');
                 localStorage.setItem('userEmail', response.data.data.user.email || '');
                 localStorage.setItem('userToken', response.data.data.accessToken || '');
     
                 toast.success(response.data.message);
                 navigate('/dashboard');
-            } else {
-                toast.error(response.data.message);
-            }
-        } catch (error) {
-            if (axios.isAxiosError(error) && error.response) {
-                toast.error(error.response.data.message);
-            } else {
-                toast.error('An unexpected error occurred');
-            }
-        }
+
+            });
+          } catch (e) {
+            console.error(e);
+          }
     };
     
     
