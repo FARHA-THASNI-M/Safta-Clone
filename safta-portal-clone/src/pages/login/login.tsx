@@ -49,7 +49,7 @@ const Login: React.FC = () => {
     
         try {
             const response: AxiosResponse<LoginResponse> = await axios.post(
-                `${baseURL}auth/login?lang=en`, 
+                'https://dev-portal.safta.sa/api/v1/auth/login?lang=en', 
                 requestData, 
                 { headers }
             );

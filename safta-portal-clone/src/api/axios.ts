@@ -1,5 +1,5 @@
 import axios from 'axios';
 
 export default axios.create({
-    baseURL: 'https://dev-portal.safta.sa/api/v1'
+    baseURL: 'https://dev-portal.safta.sa/api'
 })
