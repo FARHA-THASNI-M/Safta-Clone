@@ -224,7 +224,7 @@ const Documents: React.FC = () => {
   if (error) {
     return (
       <Box p={3}>
-        <div className="error-message">{error}</div>
+        <Box className="error-message">{error}</Box>
       </Box>
     );
   }
