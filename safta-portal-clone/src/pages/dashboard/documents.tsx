@@ -239,110 +239,108 @@ const Documents: React.FC = () => {
   return (
     <Box sx={{ p: 3 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
-        <TextField
-          variant="outlined"
-          placeholder="Search..."
-          size="small"
-          value={searchQuery}
-          onChange={handleSearchChange}
-          sx={{
-            width: '300px',
-            '& .MuiOutlinedInput-root': {
-              '&:hover fieldset': {
-                borderColor: 'black',
-              },
-            },
-          }}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <SearchIcon />
-              </InputAdornment>
-            ),
-          }}
-        />
-        
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <TextField
-            type="date"
-            size="small"
-            value={filters.date}
-            onChange={handleFilterChange}
-            name="date"
-            sx={{
-              width: '150px',
-              '&:hover .MuiOutlinedInput-notchedOutline': {
-                borderColor: 'black',
-              },
-            }}
-          />
-          
-          <TextField
-            select
-            size="small"
-            value={filters.workgroup}
-            onChange={handleFilterChange}
-            name="workgroup"
-            defaultValue=""
-            sx={{
-              width: '150px',
-              '&:hover .MuiOutlinedInput-notchedOutline': {
-                borderColor: 'black',
-              },
-            }}
-          >
-            <MenuItem value="">Working Groups</MenuItem>
-          </TextField>
-          
-          <TextField
-            select
-            size="small"
-            value={filters.status}
-            onChange={handleFilterChange}
-            name="status"
-            defaultValue=""
-            sx={{
-              width: '150px',
-              '&:hover .MuiOutlinedInput-notchedOutline': {
-                borderColor: 'black',
-              },
-            }}
-          >
-            <MenuItem value="">Status</MenuItem>
-          </TextField>
-        </Box>
 
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, ml: 'auto' }}>
-          <IconButton 
-            sx={{ 
-              color: 'black',
-              border: '1px solid #e0e0e0',
-              borderRadius: '4px',
-              padding: '7px'
-            }}
-          >
-            <TuneIcon />
-          </IconButton>
-          
-          <Button 
-            variant="outlined" 
-            onClick={handleResetFilters}
-            sx={{
-              backgroundColor: '#f5f5f5',
-              color: '#666',
-              border: '1px solid #e0e0e0',
-              '&:hover': {
-                backgroundColor: '#eeeeee',
-                border: '1px solid #e0e0e0',
-              },
-              textTransform: 'none',
-              minWidth: '80px'
-            }}
-          >
-            Reset
-          </Button>
-        </Box>
-      </Box>
+    <IconButton
+      sx={{
+        color: 'black',
+        padding: '7px',
+      }}
+    >
+      <TuneIcon />
+    </IconButton>
+  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+    <TextField
+      type="date"
+      size="small"
+      value={filters.date}
+      onChange={handleFilterChange}
+      name="date"
+      sx={{
+        width: '150px',
+        '&:hover .MuiOutlinedInput-notchedOutline': {
+          borderColor: 'black',
+        },
+      }}
+    />
+
+    <TextField
+      select
+      size="small"
+      value={filters.workgroup}
+      onChange={handleFilterChange}
+      name="workgroup"
+      defaultValue=""
+      sx={{
+        width: '150px',
+        '&:hover .MuiOutlinedInput-notchedOutline': {
+          borderColor: 'black',
+        },
+      }}
+    >
+      <MenuItem value="">Working Groups</MenuItem>
+    </TextField>
+
+    <TextField
+      select
+      size="small"
+      value={filters.status}
+      onChange={handleFilterChange}
+      name="status"
+      defaultValue=""
+      sx={{
+        width: '150px',
+        '&:hover .MuiOutlinedInput-notchedOutline': {
+          borderColor: 'black',
+        },
+      }}
+    >
+      <MenuItem value="">Status</MenuItem>
+    </TextField>
+    <Button
+      variant="outlined"
+      onClick={handleResetFilters}
+      sx={{
+        backgroundColor: '#f5f5f5',
+        color: '#666',
+        border: '1px solid #e0e0e0',
+        '&:hover': {
+          backgroundColor: '#eeeeee',
+          border: '1px solid #e0e0e0',
+        },
+        textTransform: 'none',
+        minWidth: '80px',
+      }}
+    >
+      Reset
+    </Button>
+  </Box>
+
+  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, ml: 'auto' }}>
+  <TextField
+    variant="outlined"
+    placeholder="Search..."
+    size="small"
+    value={searchQuery}
+    onChange={handleSearchChange}
+    sx={{
+      width: '300px',
+      '& .MuiOutlinedInput-root': {
+        '&:hover fieldset': {
+          borderColor: 'black',
+        },
+      },
+    }}
+    InputProps={{
+      startAdornment: (
+        <InputAdornment position="start">
+          <SearchIcon />
+        </InputAdornment>
+      ),
+    }}
+  />
+  </Box>
+</Box>
+
 
       <TableContainer component={Paper} sx={{ boxShadow: 'none', border: '1px solid #e0e0e0' }}>
         <Table>
