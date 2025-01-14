@@ -1,5 +1,25 @@
 import React, { useState, useEffect } from "react";
-import {Box,Table,TableBody,TableCell,TableContainer,TableRow,TableHead,TableFooter,TablePagination,Paper,InputAdornment, IconButton,Chip,CircularProgress,Alert,TextField,} from "@mui/material";
+import {
+  Box,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableRow,
+  TableHead,
+  TableFooter,
+  TablePagination,
+  Paper,
+  InputAdornment,
+  IconButton,
+  Chip,
+  CircularProgress,
+  Alert,
+  TextField,
+  MenuItem,
+  Select,
+  Button,
+} from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import { KeyboardArrowLeft, KeyboardArrowRight, Edit, Delete } from "@mui/icons-material";
 import axiosInstance from "../../api/axios";
@@ -117,10 +137,15 @@ const Documents: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [filters, setFilters] = useState({
+    date: "",
+    workgroup: "",
+    status: "",
+  });
 
   useEffect(() => {
     fetchDocuments();
-  }, [page, rowsPerPage]);
+  }, [page, rowsPerPage, filters]);  // Added filters to the dependency array
 
   const fetchDocuments = async (): Promise<void> => {
     try {
@@ -174,10 +199,27 @@ const Documents: React.FC = () => {
     setSearchQuery(event.target.value);
   };
 
+  const handleFilterChange = (event: React.ChangeEvent<{ name?: string; value: unknown }>) => {
+    const { name, value } = event.target;
+    setFilters((prev) => ({
+      ...prev,
+      [name as string]: value,
+    }));
+  };
+
+  const handleResetFilters = () => {
+    setFilters({
+      date: "",
+      workgroup: "",
+      status: "",
+    });
+  };
+
   const filteredRows = rows.filter(
     (row) =>
-      row.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      row.workgroup_name.toLowerCase().includes(searchQuery.toLowerCase())
+      (filters.date ? format(new Date(row.created_at), "yyyy-MM-dd") === filters.date : true) &&
+      (row.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        row.workgroup_name.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   if (loading) {
@@ -198,29 +240,76 @@ const Documents: React.FC = () => {
 
   return (
     <Box>
-      <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
-  <TextField
-    variant="outlined"
-    size="small"
-    value={searchQuery}
-    onChange={handleSearchChange}
-    sx={{
-      width: "300px",
-      "& .MuiOutlinedInput-root": {
-        "&:hover fieldset": {
-          borderColor: "black", 
-        },
-      },
-    }}
-    InputProps={{
-      startAdornment: (
-        <InputAdornment position="start">
-          <SearchIcon />
-        </InputAdornment>
-      ),
-    }}
-  />
-</Box>
+      <Box display="flex" justifyContent="space-between" mb={2}>
+        <Box display="flex" gap={2}>
+          <TextField
+            label="Date"
+            type="date"
+            name="date"
+            InputLabelProps={{ shrink: true }}
+            value={filters.date}
+            onChange={handleFilterChange}
+            sx={{
+              "&:hover .MuiOutlinedInput-notchedOutline": {
+                borderColor: "black",
+              },
+            }}
+          />
+          <Select
+            name="workgroup"
+            value={filters.workgroup}
+            onChange={handleFilterChange}
+            displayEmpty
+            sx={{
+              "&:hover .MuiOutlinedInput-notchedOutline": {
+                borderColor: "black",
+              },
+            }}
+          >
+            <MenuItem value="">Workgroup</MenuItem>
+          </Select>
+          <Select
+            name="status"
+            value={filters.status}
+            onChange={handleFilterChange}
+            displayEmpty
+            sx={{
+              "&:hover .MuiOutlinedInput-notchedOutline": {
+                borderColor: "black",
+              },
+            }}
+          >
+            <MenuItem value="">Status</MenuItem>
+          </Select>
+        </Box>
+
+        <Box display="flex" gap={2}>
+          <TextField
+            variant="outlined"
+            size="small"
+            value={searchQuery}
+            onChange={handleSearchChange}
+            sx={{
+              width: "300px",
+              "& .MuiOutlinedInput-root": {
+                "&:hover fieldset": {
+                  borderColor: "black", 
+                },
+              },
+            }}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon />
+                </InputAdornment>
+              ),
+            }}
+          />
+          <Button variant="outlined" onClick={handleResetFilters}>
+            Reset
+          </Button>
+        </Box>
+      </Box>
 
       <TableContainer
         component={Paper}
