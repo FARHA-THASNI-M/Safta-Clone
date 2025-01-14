@@ -1,286 +1,234 @@
-import React, { useState } from "react";
-import { SelectChangeEvent } from '@mui/material/Select';
-import {
-  Box,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableFooter,
-  TableRow,
-  TableHead,
-  Paper,
-  IconButton,
-  Select,
-  MenuItem,
-  Chip,
-  TextField,
-  Button,
-  TablePagination,
-} from "@mui/material";
-import {
-  FirstPage as FirstPageIcon,
-  KeyboardArrowLeft,
-  KeyboardArrowRight,
-  LastPage as LastPageIcon,
-  Edit as EditIcon,
-  Delete as DeleteIcon,
-} from "@mui/icons-material";
+import React, { useState, useEffect } from "react";
+import {Box,Table,TableBody,TableCell,TableContainer,TableRow,TableHead,Paper,IconButton,Chip,Button,CircularProgress,Alert,Select,MenuItem,FormControl,InputLabel,} from "@mui/material";
+import {KeyboardArrowLeft,KeyboardArrowRight,KeyboardArrowDown,Edit,Delete,} from "@mui/icons-material";
+import axiosInstance from "../../api/axios";
+import { format } from "date-fns";
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
 
 interface RowData {
   id: number;
-  documentTitle: string;
-  workingGroup: string;
-  uploadedDate: string;
-  uploadedBy: string;
-  status: string;
-  isPublic: boolean;
+  title: string;
+  workgroup_name: string;
+  deliverable_name: number;
+  created_at: string;
+  creator_name: string;
+  status: number;
+  public_at: string | null;
+}
+interface Pagination {
+  currentPage: number;
+  perPage: number;
+  totalCount: number;
+  totalPages: number;
 }
 
-const rows: RowData[] = [
-  {
-    id: 1,
-    documentTitle: "Document A",
-    workingGroup: "Group 1",
-    uploadedDate: "2024-12-15",
-    uploadedBy: "User 1",
-    status: "Approved",
-    isPublic: false,
-  },
-  {
-    id: 2,
-    documentTitle: "Document B",
-    workingGroup: "Group 2",
-    uploadedDate: "2024-12-16",
-    uploadedBy: "User 2",
-    status: "Pending",
-    isPublic: true,
-  },
-  {
-    id: 3,
-    documentTitle: "Document C",
-    workingGroup: "Group 1",
-    uploadedDate: "2024-12-18",
-    uploadedBy: "User 3",
-    status: "Rejected",
-    isPublic: false,
-  },
-];
+interface PaginatedResponse {
+  data: {
+    documents: RowData[];
+    pagination: Pagination;
+  };
+}
 
-export default function FilterableTable() {
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(5);
-  const [filteredRows, setFilteredRows] = useState(rows);
-  const [filters, setFilters] = useState({
-    workingGroup: "",
-    status: "",
-    date: "",
-  });
+export default function Documents() {
+  const [page, setPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [rows, setRows] = useState<RowData[]>([]);
+  const [totalResults, setTotalResults] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const emptyRows =
-    page > 0 ? Math.max(0, (1 + page) * rowsPerPage - filteredRows.length) : 0;
+  useEffect(() => {
+    fetchDocuments();
+  }, [page, rowsPerPage]);
 
-  const handleChangePage = (
-    event: React.MouseEvent<HTMLButtonElement> | null, 
-    newPage: number
-  ) => {
+  const fetchDocuments = async () => {
+    try {
+      setLoading(true);
+      const response = await axiosInstance.get<PaginatedResponse>(
+        `/documents?lang=en&page=${page}&size=${rowsPerPage}`
+      );
+      const data = response.data.data;
+      setRows(data.documents);
+      setTotalResults(data.pagination.totalCount);
+      setTotalPages(data.pagination.totalPages);
+      setError(null);
+    } catch (err) {
+      setError("Failed to fetch documents. Please try again later.");
+      console.error("Error fetching documents:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async (id: number) => {
+    try {
+      await axiosInstance.delete(`/documents/${id}`);
+      fetchDocuments(); 
+    } catch (err) {
+      setError("Failed to delete document");
+      console.error("Error deleting document:", err);
+    }
+  };
+  const handlePageChange = (newPage: number) => {
     setPage(newPage);
   };
 
-  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
+  const handleRowsPerPageChange = (event: React.ChangeEvent<{ value: unknown }>) => {
+    setRowsPerPage(event.target.value as number);
+    setPage(1); 
   };
 
-  const handleFilterChange = (event: SelectChangeEvent<string>) => {
-    const { name, value } = event.target;
-
-    const newFilters = { ...filters, [name!]: value };
-    setFilters(newFilters);
-
-    const filtered = rows.filter((row) => {
-      const matchesWorkingGroup = newFilters.workingGroup === "" || row.workingGroup === newFilters.workingGroup;
-      const matchesStatus = newFilters.status === "" || row.status === newFilters.status;
-      const matchesDate = newFilters.date === "" || row.uploadedDate === newFilters.date;
-
-      return matchesWorkingGroup && matchesStatus && matchesDate;
-    });
-
-    setFilteredRows(filtered);
-    setPage(0);
-  };
-
-  const handleResetFilters = () => {
-    setFilters({
-      workingGroup: "",
-      status: "",
-      date: "",
-    });
-    setFilteredRows(rows);
-    setPage(0);
-  };
+  if (loading) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+        <CircularProgress />
+      </Box>);}
+  if (error) {
+    return (
+      <Box p={3}>
+        <Alert severity="error">{error}</Alert>
+      </Box>);}
 
   return (
     <Box>
-      <Box display="flex" alignItems="center" gap={2} mb={2}>
-        <TextField
-          label="Date"
-          type="date"
-          name="date"
-          InputLabelProps={{ shrink: true }}
-          value={filters.date}
-          onChange={(e) => handleFilterChange({ target: { name: 'date', value: e.target.value } } as SelectChangeEvent<string>)} 
-        />
-        <Select
-          name="workingGroup"
-          value={filters.workingGroup}
-          onChange={handleFilterChange}
-          displayEmpty
+      <TableContainer
+  component={Paper}
+  sx={{
+    maxWidth: "1200px",
+    margin: "auto", 
+    boxShadow: "0px 3px 6px rgba(0, 0, 0, 0.16)",
+    borderRadius: "8px", 
+    overflow: "hidden",
+  }}>
+  <Table
+    sx={{
+      minWidth: 750,
+      "& .MuiTableCell-root": {
+        padding: "12px 16px", 
+      },
+    }}
+    aria-label="documents table"
+  >
+    <TableHead>
+      <TableRow
+        sx={{
+          backgroundColor: "#f5f5f5",
+        }}
+      >
+        <TableCell>S. No</TableCell>
+        <TableCell>Document Title</TableCell>
+        <TableCell>Working Group</TableCell>
+        <TableCell>Deliverable</TableCell>
+        <TableCell>Uploaded Date</TableCell>
+        <TableCell>Uploaded By</TableCell>
+        <TableCell>Status</TableCell>
+        <TableCell>Public</TableCell>
+        <TableCell align="center">Actions</TableCell>
+      </TableRow>
+    </TableHead>
+    <TableBody>
+      {rows.map((row, index) => (
+        <TableRow
+          key={row.id}
+          sx={{
+            "&:hover": {
+              backgroundColor: "#f0f0f0",
+            },
+          }}
         >
-          <MenuItem value="">Working Groups</MenuItem>
-          <MenuItem value="Group 1">Group 1</MenuItem>
-          <MenuItem value="Group 2">Group 2</MenuItem>
-        </Select>
-        <Select
-          name="status"
-          value={filters.status}
-          onChange={handleFilterChange}
-          displayEmpty
-        >
-          <MenuItem value="">Status</MenuItem>
-          <MenuItem value="Approved">Approved</MenuItem>
-          <MenuItem value="Pending">Pending</MenuItem>
-          <MenuItem value="Rejected">Rejected</MenuItem>
-        </Select>
-        <Button variant="outlined" onClick={handleResetFilters} sx={{ backgroundColor:'lightgray', color:'white'}}>
-          Reset
-        </Button>
+          <TableCell>{index + 1 + (page - 1) * rowsPerPage}</TableCell>
+          <TableCell>{row.title}</TableCell>
+          <TableCell>{row.workgroup_name}</TableCell>
+          <TableCell>{row.deliverable_name || " - "}</TableCell>
+          <TableCell>{format(new Date(row.created_at), "dd MMM yyyy")}</TableCell>
+          <TableCell>{row.creator_name}</TableCell>
+          <TableCell>
+            <Chip
+              label={row.status === 1 ? "Approved": row.status === 2 ? "Pending": "Rejected" }
+              size="small"
+              sx={{color:row.status === 1 ? "green": row.status === 2 ? "#ff5e00": "#bf1000",
+                   backgroundColor:row.status === 1 ? "#ccffc9": row.status === 2 ? "#ffe0a6": "#fca69f",}}/>
+          </TableCell>
+          <TableCell>
+            {row.public_at === null ? (
+              <CheckCircleOutlineIcon sx={{ color: "green" }} /> ) : (<CancelOutlinedIcon sx={{ color: "red" }} />)}
+          </TableCell>
+          <TableCell align="center">
+            <IconButton>
+              <Edit />
+            </IconButton>
+            <IconButton onClick={() => handleDelete(row.id)}>
+              <Delete />
+            </IconButton>
+          </TableCell>
+        </TableRow>
+      ))}
+    </TableBody>
+  </Table>
+</TableContainer>
+
+      <Box
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+        p={2}
+        mt={2}
+        borderTop="1px solid #e0e0e0"
+        bgcolor="#f9f9f9"
+         >
+        <Box display="flex" alignItems="center" gap={1}>
+          <FormControl size="small" variant="standard" sx={{ minWidth: 80 }}>
+            <InputLabel>Rows</InputLabel>
+            <Select
+              value={rowsPerPage}
+              onChange={handleRowsPerPageChange}
+              label="Rows"
+              IconComponent={(props) => (
+                <KeyboardArrowDown {...props} style={{ color: "black" }} />
+              )}
+              disableUnderline
+            >
+              <MenuItem value={10}>10</MenuItem>
+              <MenuItem value={20}>20</MenuItem>
+              <MenuItem value={30}>30</MenuItem>
+            </Select>
+          </FormControl>
+          <Box>{totalResults} results</Box>
+        </Box>
+        <Box display="flex" alignItems="center">
+          <IconButton
+            onClick={() => handlePageChange(page - 1)}
+            disabled={page === 1}
+          >
+            <KeyboardArrowLeft />
+          </IconButton>
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
+            <Button
+              key={pageNum}
+              onClick={() => handlePageChange(pageNum)}
+              sx={{
+                mx: 0.5,
+                backgroundColor: pageNum === page ? "black" : "transparent",
+                color: pageNum === page ? "white" : "black",
+                border: "1px solid black",
+                "&:hover": {
+                  backgroundColor: pageNum === page ? "black" : "#f0f0f0",
+                },
+              }}
+            >
+              {pageNum}
+            </Button>
+          ))}
+          <IconButton
+            onClick={() => handlePageChange(page + 1)}
+            disabled={page === totalPages}
+          >
+            <KeyboardArrowRight />
+          </IconButton>
+        </Box>
       </Box>
-
-      {/* Table */}
-      <TableContainer component={Paper}>
-        <Table sx={{ minWidth: 750 }} aria-label="custom table">
-          <TableHead>
-            <TableRow>
-              <TableCell>S. No</TableCell>
-              <TableCell>Document Title</TableCell>
-              <TableCell>Working Group</TableCell>
-              <TableCell>Uploaded Date</TableCell>
-              <TableCell>Uploaded By</TableCell>
-              <TableCell>Status</TableCell>
-              <TableCell>Public</TableCell>
-              <TableCell align="center">Action</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {(rowsPerPage > 0
-              ? filteredRows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-              : filteredRows
-            ).map((row, index) => (
-              <TableRow key={row.id}>
-                <TableCell>{index + 1 + page * rowsPerPage}</TableCell>
-                <TableCell>{row.documentTitle}</TableCell>
-                <TableCell>{row.workingGroup}</TableCell>
-                <TableCell>{row.uploadedDate}</TableCell>
-                <TableCell>{row.uploadedBy}</TableCell>
-                <TableCell>
-                  <Chip
-                    label={row.status}
-                    color={
-                      row.status === "Approved"
-                        ? "success"
-                        : row.status === "Pending"
-                        ? "warning"
-                        : "error"
-                    }
-                    size="small"
-                  />
-                </TableCell>
-                <TableCell>{row.isPublic ? "Yes" : "No"}</TableCell>
-                <TableCell align="center">
-                  <IconButton>
-                    <EditIcon />
-                  </IconButton>
-                  <IconButton>
-                    <DeleteIcon />
-                  </IconButton>
-                </TableCell>
-              </TableRow>
-            ))}
-            {emptyRows > 0 && (
-              <TableRow style={{ height: 53 * emptyRows }}>
-                <TableCell colSpan={8} />
-              </TableRow>
-            )}
-          </TableBody>
-          <TableFooter>
-            <TableRow>
-              <TablePagination
-                rowsPerPageOptions={[5, 10, 25]}
-                colSpan={8}
-                count={filteredRows.length}
-                rowsPerPage={rowsPerPage}
-                page={page}
-                onPageChange={handleChangePage}
-                onRowsPerPageChange={handleChangeRowsPerPage}
-                ActionsComponent={TablePaginationActions}
-              />
-            </TableRow>
-          </TableFooter>
-        </Table>
-      </TableContainer>
-    </Box>
-  );
-}
-function TablePaginationActions(props: any) {
-  const { count, page, rowsPerPage, onPageChange } = props;
-
-  const handleFirstPageButtonClick = (event: React.MouseEvent) => {
-    onPageChange(event, 0);
-  };
-
-  const handleBackButtonClick = (event: React.MouseEvent) => {
-    onPageChange(event, page - 1);
-  };
-
-  const handleNextButtonClick = (event: React.MouseEvent) => {
-    onPageChange(event, page + 1);
-  };
-
-  const handleLastPageButtonClick = (event: React.MouseEvent) => {
-    onPageChange(event, Math.max(0, Math.ceil(count / rowsPerPage) - 1));
-  };
-
-  return (
-    <Box sx={{ flexShrink: 0, ml: 2 }}>
-      <IconButton
-        onClick={handleFirstPageButtonClick}
-        disabled={page === 0}
-        aria-label="first page"
-      >
-        <FirstPageIcon />
-      </IconButton>
-      <IconButton
-        onClick={handleBackButtonClick}
-        disabled={page === 0}
-        aria-label="previous page"
-      >
-        <KeyboardArrowLeft />
-      </IconButton>
-      <IconButton
-        onClick={handleNextButtonClick}
-        disabled={page >= Math.ceil(count / rowsPerPage) - 1}
-        aria-label="next page"
-      >
-        <KeyboardArrowRight />
-      </IconButton>
-      <IconButton
-        onClick={handleLastPageButtonClick}
-        disabled={page >= Math.ceil(count / rowsPerPage) - 1}
-        aria-label="last page"
-      >
-        <LastPageIcon />
-      </IconButton>
     </Box>
   );
 }

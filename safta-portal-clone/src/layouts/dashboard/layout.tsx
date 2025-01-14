@@ -112,7 +112,7 @@ export default function DashboardLayout() {
   return (
     <Box sx={{ display: 'flex' }}>
       <CssBaseline />
-      <AppBar position="fixed" open={open}>
+      <AppBar position="fixed" sx={{marginLeft:open?'500px':'0px'}}>
         <Toolbar sx={{ justifyContent: 'space-between', paddingLeft: 2 }}>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <IconButton
