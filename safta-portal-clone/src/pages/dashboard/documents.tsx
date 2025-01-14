@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Table,
@@ -14,24 +14,23 @@ import {
   IconButton,
   Chip,
   CircularProgress,
-  Alert,
   TextField,
   MenuItem,
-  Select,
   Button,
-} from "@mui/material";
-import SearchIcon from "@mui/icons-material/Search";
-import { KeyboardArrowLeft, KeyboardArrowRight, Edit, Delete } from "@mui/icons-material";
-import axiosInstance from "../../api/axios";
-import { format } from "date-fns";
-import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
-import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
+} from '@mui/material';
+import SearchIcon from '@mui/icons-material/Search';
+import TuneIcon from '@mui/icons-material/Tune';
+import { KeyboardArrowLeft, KeyboardArrowRight, Edit, Delete } from '@mui/icons-material';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
+import { format } from 'date-fns';
+import axiosInstance from '../../api/axios';
 
 interface RowData {
   id: number;
   title: string;
   workgroup_name: string;
-  deliverable_name: number;
+  deliverable_name: string | null;
   created_at: string;
   creator_name: string;
   status: number;
@@ -52,14 +51,17 @@ interface PaginatedResponse {
   };
 }
 
+interface Filters {
+  date: string;
+  workgroup: string;
+  status: string;
+}
+
 interface TablePaginationActionsProps {
   count: number;
   page: number;
   rowsPerPage: number;
-  onPageChange: (
-    event: React.MouseEvent<HTMLButtonElement> | null,
-    newPage: number
-  ) => void;
+  onPageChange: (event: React.MouseEvent<HTMLButtonElement> | null, newPage: number) => void;
 }
 
 const TablePaginationActions: React.FC<TablePaginationActionsProps> = (props) => {
@@ -74,53 +76,48 @@ const TablePaginationActions: React.FC<TablePaginationActionsProps> = (props) =>
     onPageChange(event, page + 1);
   };
 
-  const handlePageClick = (
-    event: React.MouseEvent<HTMLDivElement>,
-    pageNumber: number
-  ) => {
+  const handlePageClick = (event: React.MouseEvent<HTMLDivElement>, pageNumber: number) => {
     onPageChange(null, pageNumber);
   };
 
   return (
-    <Box sx={{ flexShrink: 0, display: "flex", alignItems: "center", gap: "4px", ml: 2.5 }}>
+    <Box sx={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: '4px', ml: 2.5 }}>
       <IconButton
         size="small"
         onClick={handleBackButtonClick}
         disabled={page === 0}
-        sx={{ color: "#666" }}
+        sx={{ color: '#666' }}
       >
         <KeyboardArrowLeft />
       </IconButton>
-
       {Array.from({ length: totalPages }, (_, i) => i).map((pageNum) => (
         <Box
           key={pageNum}
           onClick={(event) => handlePageClick(event, pageNum)}
           sx={{
-            cursor: "pointer",
-            width: "32px",
-            height: "24px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            backgroundColor: pageNum === page ? "#000" : "transparent",
-            color: pageNum === page ? "#fff" : "#666",
-            fontSize: "0.875rem",
-            borderRadius: "4px",
-            "&:hover": {
-              backgroundColor: pageNum === page ? "#000" : "#f5f5f5",
+            cursor: 'pointer',
+            width: '32px',
+            height: '24px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: pageNum === page ? '#000' : 'transparent',
+            color: pageNum === page ? '#fff' : '#666',
+            fontSize: '0.875rem',
+            borderRadius: '4px',
+            '&:hover': {
+              backgroundColor: pageNum === page ? '#000' : '#f5f5f5',
             },
           }}
         >
           {pageNum + 1}
         </Box>
       ))}
-
       <IconButton
         size="small"
         onClick={handleNextButtonClick}
         disabled={page >= Math.ceil(count / rowsPerPage) - 1}
-        sx={{ color: "#666" }}
+        sx={{ color: '#666' }}
       >
         <KeyboardArrowRight />
       </IconButton>
@@ -136,16 +133,16 @@ const Documents: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<number | null>(null);
-  const [searchQuery, setSearchQuery] = useState<string>("");
-  const [filters, setFilters] = useState({
-    date: "",
-    workgroup: "",
-    status: "",
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [filters, setFilters] = useState<Filters>({
+    date: '',
+    workgroup: '',
+    status: '',
   });
 
   useEffect(() => {
     fetchDocuments();
-  }, [page, rowsPerPage, filters]);  // Added filters to the dependency array
+  }, [page, rowsPerPage, filters]);
 
   const fetchDocuments = async (): Promise<void> => {
     try {
@@ -158,15 +155,15 @@ const Documents: React.FC = () => {
       setTotalResults(data.pagination.totalCount);
       setError(null);
     } catch (err) {
-      setError("Failed to fetch documents. Please try again later.");
-      console.error("Error fetching documents:", err);
+      setError('Failed to fetch documents. Please try again later.');
+      console.error('Error fetching documents:', err);
     } finally {
       setLoading(false);
     }
   };
 
   const handleDelete = async (id: number): Promise<void> => {
-    if (!window.confirm("Are you sure you want to delete this document?")) {
+    if (!window.confirm('Are you sure you want to delete this document?')) {
       return;
     }
     try {
@@ -174,8 +171,8 @@ const Documents: React.FC = () => {
       await axiosInstance.delete(`/documents/${id}`);
       fetchDocuments();
     } catch (err) {
-      setError("Failed to delete document");
-      console.error("Error deleting document:", err);
+      setError('Failed to delete document');
+      console.error('Error deleting document:', err);
     } finally {
       setDeleting(null);
     }
@@ -199,28 +196,22 @@ const Documents: React.FC = () => {
     setSearchQuery(event.target.value);
   };
 
-  const handleFilterChange = (event: React.ChangeEvent<{ name?: string; value: unknown }>) => {
+  const handleFilterChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
     setFilters((prev) => ({
       ...prev,
-      [name as string]: value,
+      [name]: value,
     }));
   };
 
   const handleResetFilters = () => {
     setFilters({
-      date: "",
-      workgroup: "",
-      status: "",
+      date: '',
+      workgroup: '',
+      status: '',
     });
+    setSearchQuery('');
   };
-
-  const filteredRows = rows.filter(
-    (row) =>
-      (filters.date ? format(new Date(row.created_at), "yyyy-MM-dd") === filters.date : true) &&
-      (row.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        row.workgroup_name.toLowerCase().includes(searchQuery.toLowerCase()))
-  );
 
   if (loading) {
     return (
@@ -233,103 +224,128 @@ const Documents: React.FC = () => {
   if (error) {
     return (
       <Box p={3}>
-        <Alert severity="error">{error}</Alert>
+        <div className="error-message">{error}</div>
       </Box>
     );
   }
 
+  const filteredRows = rows.filter(
+    (row) =>
+      (filters.date ? format(new Date(row.created_at), 'yyyy-MM-dd') === filters.date : true) &&
+      (row.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        row.workgroup_name.toLowerCase().includes(searchQuery.toLowerCase()))
+  );
+
   return (
-    <Box>
-      <Box display="flex" justifyContent="space-between" mb={2}>
-        <Box display="flex" gap={2}>
+    <Box sx={{ p: 3 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
+        <TextField
+          variant="outlined"
+          placeholder="Search..."
+          size="small"
+          value={searchQuery}
+          onChange={handleSearchChange}
+          sx={{
+            width: '300px',
+            '& .MuiOutlinedInput-root': {
+              '&:hover fieldset': {
+                borderColor: 'black',
+              },
+            },
+          }}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon />
+              </InputAdornment>
+            ),
+          }}
+        />
+        
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <TextField
-            label="Date"
             type="date"
-            name="date"
-            InputLabelProps={{ shrink: true }}
+            size="small"
             value={filters.date}
             onChange={handleFilterChange}
+            name="date"
             sx={{
-              "&:hover .MuiOutlinedInput-notchedOutline": {
-                borderColor: "black",
+              width: '150px',
+              '&:hover .MuiOutlinedInput-notchedOutline': {
+                borderColor: 'black',
               },
             }}
           />
-          <Select
-            name="workgroup"
+          
+          <TextField
+            select
+            size="small"
             value={filters.workgroup}
             onChange={handleFilterChange}
-            displayEmpty
+            name="workgroup"
+            defaultValue=""
             sx={{
-              "&:hover .MuiOutlinedInput-notchedOutline": {
-                borderColor: "black",
+              width: '150px',
+              '&:hover .MuiOutlinedInput-notchedOutline': {
+                borderColor: 'black',
               },
             }}
           >
-            <MenuItem value="">Workgroup</MenuItem>
-          </Select>
-          <Select
-            name="status"
+            <MenuItem value="">Working Groups</MenuItem>
+          </TextField>
+          
+          <TextField
+            select
+            size="small"
             value={filters.status}
             onChange={handleFilterChange}
-            displayEmpty
+            name="status"
+            defaultValue=""
             sx={{
-              "&:hover .MuiOutlinedInput-notchedOutline": {
-                borderColor: "black",
+              width: '150px',
+              '&:hover .MuiOutlinedInput-notchedOutline': {
+                borderColor: 'black',
               },
             }}
           >
             <MenuItem value="">Status</MenuItem>
-          </Select>
+          </TextField>
         </Box>
 
-        <Box display="flex" gap={2}>
-          <TextField
-            variant="outlined"
-            size="small"
-            value={searchQuery}
-            onChange={handleSearchChange}
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, ml: 'auto' }}>
+          <IconButton 
+            sx={{ 
+              color: 'black',
+              border: '1px solid #e0e0e0',
+              borderRadius: '4px',
+              padding: '7px'
+            }}
+          >
+            <TuneIcon />
+          </IconButton>
+          
+          <Button 
+            variant="outlined" 
+            onClick={handleResetFilters}
             sx={{
-              width: "300px",
-              "& .MuiOutlinedInput-root": {
-                "&:hover fieldset": {
-                  borderColor: "black", 
-                },
+              backgroundColor: '#f5f5f5',
+              color: '#666',
+              border: '1px solid #e0e0e0',
+              '&:hover': {
+                backgroundColor: '#eeeeee',
+                border: '1px solid #e0e0e0',
               },
+              textTransform: 'none',
+              minWidth: '80px'
             }}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon />
-                </InputAdornment>
-              ),
-            }}
-          />
-          <Button variant="outlined" onClick={handleResetFilters}>
+          >
             Reset
           </Button>
         </Box>
       </Box>
 
-      <TableContainer
-        component={Paper}
-        sx={{
-          maxWidth: "1600px",
-          margin: "auto",
-          boxShadow: "0px 3px 6px rgba(0, 0, 0, 0.16)",
-          borderRadius: "8px",
-          overflow: "hidden",
-        }}
-      >
-        <Table
-          sx={{
-            minWidth: 750,
-            "& .MuiTableCell-root": {
-              padding: "12px 16px",
-            },
-          }}
-          aria-label="documents table"
-        >
+      <TableContainer component={Paper} sx={{ boxShadow: 'none', border: '1px solid #e0e0e0' }}>
+        <Table>
           <TableHead>
             <TableRow>
               <TableCell>S. No</TableCell>
@@ -340,23 +356,16 @@ const Documents: React.FC = () => {
               <TableCell>Uploaded By</TableCell>
               <TableCell>Status</TableCell>
               <TableCell>Public</TableCell>
-              <TableCell align="center">Actions</TableCell>
+              <TableCell align="center">Action</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {filteredRows.map((row, index) => (
-              <TableRow
-                key={row.id}
-                sx={{
-                  "&:hover": {
-                    backgroundColor: "#f0f0f0",
-                  },
-                }}
-              >
+              <TableRow key={row.id}>
                 <TableCell>{index + 1 + page * rowsPerPage}</TableCell>
                 <TableCell>{row.title}</TableCell>
                 <TableCell>{row.workgroup_name}</TableCell>
-                <TableCell>{row.deliverable_name || " - "}</TableCell>
+                <TableCell>{row.deliverable_name || "-"}</TableCell>
                 <TableCell>{format(new Date(row.created_at), "dd MMM yyyy")}</TableCell>
                 <TableCell>{row.creator_name}</TableCell>
                 <TableCell>
@@ -371,21 +380,22 @@ const Documents: React.FC = () => {
                 </TableCell>
                 <TableCell>
                   {row.public_at === null ? (
-                    <CheckCircleOutlineIcon sx={{ color: "green" }} />
-                  ) : (
                     <CancelOutlinedIcon sx={{ color: "red" }} />
+                  ) : (
+                    <CheckCircleOutlineIcon sx={{ color: "green" }} />
                   )}
                 </TableCell>
                 <TableCell align="center">
-                  <IconButton>
+                  <IconButton size="small">
                     <Edit />
                   </IconButton>
                   <IconButton
+                    size="small"
                     onClick={() => handleDelete(row.id)}
                     disabled={deleting === row.id}
                   >
                     {deleting === row.id ? (
-                      <CircularProgress size={24} />
+                      <CircularProgress size={20} />
                     ) : (
                       <Delete />
                     )}
@@ -408,35 +418,23 @@ const Documents: React.FC = () => {
                 labelRowsPerPage=""
                 labelDisplayedRows={({ count }) => `${count} results`}
                 sx={{
-                  borderBottom: "none",
-                  "& .MuiTablePagination-toolbar": {
+                  borderBottom: 'none',
+                  '& .MuiTablePagination-toolbar': {
                     paddingLeft: 0,
-                    display: "flex",
-                    justifyContent: "space-between",
-                    width: "100%",
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    width: '100%',
                   },
-                  "& .MuiTablePagination-displayedRows": {
-                    color: "#666",
-                    marginLeft: "8px",
-                    justifyContent: "flex-start",
+                  '& .MuiTablePagination-displayedRows': {
+                    color: '#666',
+                    marginLeft: '8px',
                   },
-                  "& .MuiTablePagination-selectLabel": {
-                    display: "none",
+                  '& .MuiTablePagination-selectLabel': {
+                    display: 'none',
                   },
-                  "& .MuiTablePagination-select": {
-                    marginLeft: 0,
-                    marginRight: "8px",
-                  },
-                  "& .MuiTablePagination-actions": {
-                    marginLeft: "auto",
-                  },
-                  "& .MuiSelect-select": {
-                    paddingTop: "4px",
-                    paddingBottom: "4px",
-                  },
-                  "& .MuiInputBase-root": {
-                    marginRight: "8px",
-                    marginLeft: 0,
+                  '& .MuiSelect-select': {
+                    paddingTop: '4px',
+                    paddingBottom: '4px',
                   },
                 }}
               />
