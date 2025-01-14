@@ -1,7 +1,7 @@
-
 import React, { useState, useEffect } from "react";
-import {Box,Table,TableBody,TableCell,TableContainer,TableRow,TableHead,TableFooter,TablePagination,Paper,IconButton,Chip,CircularProgress,Alert,} from "@mui/material";
-import {KeyboardArrowLeft,KeyboardArrowRight,Edit,Delete,} from "@mui/icons-material";
+import {Box,Table,TableBody,TableCell,TableContainer,TableRow,TableHead,TableFooter,TablePagination,Paper,InputAdornment, IconButton,Chip,CircularProgress,Alert,TextField,} from "@mui/material";
+import SearchIcon from "@mui/icons-material/Search";
+import { KeyboardArrowLeft, KeyboardArrowRight, Edit, Delete } from "@mui/icons-material";
 import axiosInstance from "../../api/axios";
 import { format } from "date-fns";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
@@ -17,25 +17,28 @@ interface RowData {
   status: number;
   public_at: string | null;
 }
+
 interface Pagination {
   currentPage: number;
   perPage: number;
   totalCount: number;
   totalPages: number;
 }
+
 interface PaginatedResponse {
   data: {
     documents: RowData[];
     pagination: Pagination;
   };
 }
+
 interface TablePaginationActionsProps {
   count: number;
   page: number;
   rowsPerPage: number;
   onPageChange: (
     event: React.MouseEvent<HTMLButtonElement> | null,
-    newPage: number,
+    newPage: number
   ) => void;
 }
 
@@ -59,7 +62,7 @@ const TablePaginationActions: React.FC<TablePaginationActionsProps> = (props) =>
   };
 
   return (
-    <Box sx={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: '4px', ml: 2.5 }}>
+    <Box sx={{ flexShrink: 0, display: "flex", alignItems: "center", gap: "4px", ml: 2.5 }}>
       <IconButton
         size="small"
         onClick={handleBackButtonClick}
@@ -68,7 +71,7 @@ const TablePaginationActions: React.FC<TablePaginationActionsProps> = (props) =>
       >
         <KeyboardArrowLeft />
       </IconButton>
-      
+
       {Array.from({ length: totalPages }, (_, i) => i).map((pageNum) => (
         <Box
           key={pageNum}
@@ -86,13 +89,13 @@ const TablePaginationActions: React.FC<TablePaginationActionsProps> = (props) =>
             borderRadius: "4px",
             "&:hover": {
               backgroundColor: pageNum === page ? "#000" : "#f5f5f5",
-            }
+            },
           }}
         >
-          {(pageNum + 1) }
+          {pageNum + 1}
         </Box>
       ))}
-      
+
       <IconButton
         size="small"
         onClick={handleNextButtonClick}
@@ -113,6 +116,7 @@ const Documents: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<number | null>(null);
+  const [searchQuery, setSearchQuery] = useState<string>("");
 
   useEffect(() => {
     fetchDocuments();
@@ -154,17 +158,27 @@ const Documents: React.FC = () => {
 
   const handleChangePage = (
     event: React.MouseEvent<HTMLButtonElement> | null,
-    newPage: number,
+    newPage: number
   ): void => {
     setPage(newPage);
   };
 
   const handleChangeRowsPerPage = (
-    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ): void => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
   };
+
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(event.target.value);
+  };
+
+  const filteredRows = rows.filter(
+    (row) =>
+      row.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      row.workgroup_name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   if (loading) {
     return (
@@ -184,6 +198,30 @@ const Documents: React.FC = () => {
 
   return (
     <Box>
+      <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
+  <TextField
+    variant="outlined"
+    size="small"
+    value={searchQuery}
+    onChange={handleSearchChange}
+    sx={{
+      width: "300px",
+      "& .MuiOutlinedInput-root": {
+        "&:hover fieldset": {
+          borderColor: "black", 
+        },
+      },
+    }}
+    InputProps={{
+      startAdornment: (
+        <InputAdornment position="start">
+          <SearchIcon />
+        </InputAdornment>
+      ),
+    }}
+  />
+</Box>
+
       <TableContainer
         component={Paper}
         sx={{
@@ -203,9 +241,9 @@ const Documents: React.FC = () => {
           }}
           aria-label="documents table"
         >
-          <TableHead >
-            <TableRow  >
-              <TableCell >S. No</TableCell>
+          <TableHead>
+            <TableRow>
+              <TableCell>S. No</TableCell>
               <TableCell>Document Title</TableCell>
               <TableCell>Working Group</TableCell>
               <TableCell>Deliverable</TableCell>
@@ -217,7 +255,7 @@ const Documents: React.FC = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {rows.map((row, index) => (
+            {filteredRows.map((row, index) => (
               <TableRow
                 key={row.id}
                 sx={{
@@ -269,43 +307,50 @@ const Documents: React.FC = () => {
           </TableBody>
           <TableFooter>
             <TableRow>
-            <TablePagination
-                 colSpan={9}
-                 count={totalResults}
-                 rowsPerPage={rowsPerPage}
-                 page={page}
-                 onPageChange={handleChangePage}
-                 onRowsPerPageChange={handleChangeRowsPerPage}
-                 ActionsComponent={TablePaginationActions}
-                 rowsPerPageOptions={[10, 20, 30]}
-                 labelRowsPerPage=""
-                 labelDisplayedRows={({ count }) => `${count} results`}
-           sx={{
-               borderBottom: "none",
-               "& .MuiTablePagination-toolbar": {
-                paddingLeft: 0,
-                display: "flex",
-                justifyContent: "space-between",
-                width: "100%",},
-               "& .MuiTablePagination-displayedRows": {
-                color: "#666",
-                marginLeft: "8px",
-                justifyContent: "flex-start" },
-               "& .MuiTablePagination-selectLabel": {
-                display: "none",},
-               "& .MuiTablePagination-select": {
-                marginLeft: 0,
-                marginRight: "8px",},
-               "& .MuiTablePagination-actions": {
-                marginLeft: "auto", },
-               "& .MuiSelect-select": {
-                paddingTop: "4px",
-                paddingBottom: "4px",},
-               "& .MuiInputBase-root": {
-                marginRight: "8px",
-                marginLeft: 0,},
-                 }}/>
-
+              <TablePagination
+                colSpan={9}
+                count={totalResults}
+                rowsPerPage={rowsPerPage}
+                page={page}
+                onPageChange={handleChangePage}
+                onRowsPerPageChange={handleChangeRowsPerPage}
+                ActionsComponent={TablePaginationActions}
+                rowsPerPageOptions={[10, 20, 30]}
+                labelRowsPerPage=""
+                labelDisplayedRows={({ count }) => `${count} results`}
+                sx={{
+                  borderBottom: "none",
+                  "& .MuiTablePagination-toolbar": {
+                    paddingLeft: 0,
+                    display: "flex",
+                    justifyContent: "space-between",
+                    width: "100%",
+                  },
+                  "& .MuiTablePagination-displayedRows": {
+                    color: "#666",
+                    marginLeft: "8px",
+                    justifyContent: "flex-start",
+                  },
+                  "& .MuiTablePagination-selectLabel": {
+                    display: "none",
+                  },
+                  "& .MuiTablePagination-select": {
+                    marginLeft: 0,
+                    marginRight: "8px",
+                  },
+                  "& .MuiTablePagination-actions": {
+                    marginLeft: "auto",
+                  },
+                  "& .MuiSelect-select": {
+                    paddingTop: "4px",
+                    paddingBottom: "4px",
+                  },
+                  "& .MuiInputBase-root": {
+                    marginRight: "8px",
+                    marginLeft: 0,
+                  },
+                }}
+              />
             </TableRow>
           </TableFooter>
         </Table>
