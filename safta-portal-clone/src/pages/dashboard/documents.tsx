@@ -208,7 +208,6 @@ const Documents: React.FC = () => {
 
   return (
     <Box sx={{ p: 3 }}>
-      {/* Filters and Search */}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
         <IconButton sx={{ color: 'black', padding: '7px' }}>
           <TuneIcon />
