@@ -1,30 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import {
-  Box,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableRow,
-  TableHead,
-  TableFooter,
-  TablePagination,
-  Paper,
-  InputAdornment,
-  IconButton,
-  Chip,
-  CircularProgress,
-  TextField,
-  MenuItem,
-  Button,
-} from '@mui/material';
+import { Box, Table, TableBody, TableCell, TableContainer, TableRow, TableHead, TableFooter, TablePagination, Paper, InputAdornment, IconButton, TextField, CircularProgress, Chip, Button, MenuItem } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import TuneIcon from '@mui/icons-material/Tune';
 import { KeyboardArrowLeft, KeyboardArrowRight, Edit, Delete } from '@mui/icons-material';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
 import { format } from 'date-fns';
-import axiosInstance from '../../api/axios';
+import axiosInstance from '../../api/axios'; 
 
 interface RowData {
   id: number;
@@ -64,18 +46,13 @@ interface TablePaginationActionsProps {
   onPageChange: (event: React.MouseEvent<HTMLButtonElement> | null, newPage: number) => void;
 }
 
-const TablePaginationActions: React.FC<TablePaginationActionsProps> = (props) => {
-  const { count, page, rowsPerPage, onPageChange } = props;
+const TablePaginationActions: React.FC<TablePaginationActionsProps> = ({ count, page, rowsPerPage, onPageChange }) => {
   const totalPages = Math.ceil(count / rowsPerPage);
 
-  const handleBackButtonClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    onPageChange(event, page - 1);
+  const handleArrowButtonClick = (direction: 'back' | 'next') => {
+    const newPage = direction === 'back' ? page - 1 : page + 1;
+    onPageChange(null, newPage);
   };
-
-  const handleNextButtonClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    onPageChange(event, page + 1);
-  };
-
   const handlePageClick = (event: React.MouseEvent<HTMLDivElement>, pageNumber: number) => {
     onPageChange(null, pageNumber);
   };
@@ -84,7 +61,7 @@ const TablePaginationActions: React.FC<TablePaginationActionsProps> = (props) =>
     <Box sx={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: '4px', ml: 2.5 }}>
       <IconButton
         size="small"
-        onClick={handleBackButtonClick}
+        onClick={() => handleArrowButtonClick('back')}
         disabled={page === 0}
         sx={{ color: '#666' }}
       >
@@ -115,8 +92,8 @@ const TablePaginationActions: React.FC<TablePaginationActionsProps> = (props) =>
       ))}
       <IconButton
         size="small"
-        onClick={handleNextButtonClick}
-        disabled={page >= Math.ceil(count / rowsPerPage) - 1}
+        onClick={() => handleArrowButtonClick('next')}
+        disabled={page >= totalPages - 1}
         sx={{ color: '#666' }}
       >
         <KeyboardArrowRight />
@@ -142,13 +119,13 @@ const Documents: React.FC = () => {
 
   useEffect(() => {
     fetchDocuments();
-  }, [page, rowsPerPage, filters]);
+  }, [page, rowsPerPage, filters, searchQuery]);  
 
   const fetchDocuments = async (): Promise<void> => {
     try {
       setLoading(true);
       const response = await axiosInstance.get<PaginatedResponse>(
-        `/documents?lang=en&page=${page + 1}&size=${rowsPerPage}`
+        `/documents?lang=en&page=${page + 1}&size=${rowsPerPage}&q=${searchQuery}`
       );
       const data = response.data.data;
       setRows(data.documents);
@@ -229,119 +206,106 @@ const Documents: React.FC = () => {
     );
   }
 
-  const filteredRows = rows.filter(
-    (row) =>
-      (filters.date ? format(new Date(row.created_at), 'yyyy-MM-dd') === filters.date : true) &&
-      (row.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        row.workgroup_name.toLowerCase().includes(searchQuery.toLowerCase()))
-  );
-
   return (
     <Box sx={{ p: 3 }}>
+      {/* Filters and Search */}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
+        <IconButton sx={{ color: 'black', padding: '7px' }}>
+          <TuneIcon />
+        </IconButton>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <TextField
+            type="date"
+            size="small"
+            value={filters.date}
+            onChange={handleFilterChange}
+            name="date"
+            sx={{
+              width: '150px',
+              '&:hover .MuiOutlinedInput-notchedOutline': {
+                borderColor: 'black',
+              },
+            }}
+          />
+          <TextField
+            select
+            size="small"
+            value={filters.workgroup}
+            onChange={handleFilterChange}
+            name="workgroup"
+            defaultValue=""
+            sx={{
+              width: '150px',
+              '&:hover .MuiOutlinedInput-notchedOutline': {
+                borderColor: 'black',
+              },
+            }}
+          >
+            <MenuItem value="">Working Groups</MenuItem>
+          </TextField>
+          <TextField
+            select
+            size="small"
+            value={filters.status}
+            onChange={handleFilterChange}
+            name="status"
+            defaultValue=""
+            sx={{
+              width: '150px',
+              '&:hover .MuiOutlinedInput-notchedOutline': {
+                borderColor: 'black',
+              },
+            }}
+          >
+            <MenuItem value="">Status</MenuItem>
+          </TextField>
+          <Button
+            variant="outlined"
+            onClick={handleResetFilters}
+            sx={{
+              backgroundColor: '#f5f5f5',
+              color: '#666',
+              border: '1px solid #e0e0e0',
+              '&:hover': {
+                backgroundColor: '#eeeeee',
+                border: '1px solid #e0e0e0',
+              },
+              textTransform: 'none',
+              minWidth: '80px',
+            }}
+          >
+            Reset
+          </Button>
+        </Box>
 
-    <IconButton
-      sx={{
-        color: 'black',
-        padding: '7px',
-      }}
-    >
-      <TuneIcon />
-    </IconButton>
-  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-    <TextField
-      type="date"
-      size="small"
-      value={filters.date}
-      onChange={handleFilterChange}
-      name="date"
-      sx={{
-        width: '150px',
-        '&:hover .MuiOutlinedInput-notchedOutline': {
-          borderColor: 'black',
-        },
-      }}
-    />
+        {/* Search Box */}
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, ml: 'auto' }}>
+          <TextField
+            variant="outlined"
+            placeholder="Search..."
+            size="small"
+            value={searchQuery}
+            onChange={handleSearchChange}
+            sx={{
+              width: '300px',
+              '& .MuiOutlinedInput-root': {
+                '&:hover fieldset': {
+                  borderColor: 'black',
+                },
+              },
+            }}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon />
+                </InputAdornment>
+              ),
+            }}
+          />
+        </Box>
+      </Box>
 
-    <TextField
-      select
-      size="small"
-      value={filters.workgroup}
-      onChange={handleFilterChange}
-      name="workgroup"
-      defaultValue=""
-      sx={{
-        width: '150px',
-        '&:hover .MuiOutlinedInput-notchedOutline': {
-          borderColor: 'black',
-        },
-      }}
-    >
-      <MenuItem value="">Working Groups</MenuItem>
-    </TextField>
-
-    <TextField
-      select
-      size="small"
-      value={filters.status}
-      onChange={handleFilterChange}
-      name="status"
-      defaultValue=""
-      sx={{
-        width: '150px',
-        '&:hover .MuiOutlinedInput-notchedOutline': {
-          borderColor: 'black',
-        },
-      }}
-    >
-      <MenuItem value="">Status</MenuItem>
-    </TextField>
-    <Button
-      variant="outlined"
-      onClick={handleResetFilters}
-      sx={{
-        backgroundColor: '#f5f5f5',
-        color: '#666',
-        border: '1px solid #e0e0e0',
-        '&:hover': {
-          backgroundColor: '#eeeeee',
-          border: '1px solid #e0e0e0',
-        },
-        textTransform: 'none',
-        minWidth: '80px',
-      }}
-    >
-      Reset
-    </Button>
-  </Box>
-
-  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, ml: 'auto' }}>
-  <TextField
-    variant="outlined"
-    placeholder="Search..."
-    size="small"
-    value={searchQuery}
-    onChange={handleSearchChange}
-    sx={{
-      width: '300px',
-      '& .MuiOutlinedInput-root': {
-        '&:hover fieldset': {
-          borderColor: 'black',
-        },
-      },
-    }}
-    InputProps={{
-      startAdornment: (
-        <InputAdornment position="start">
-          <SearchIcon />
-        </InputAdornment>
-      ),
-    }}
-  />
-  </Box>
-</Box>
-
-
+      {/* Table Section */}
       <TableContainer component={Paper} sx={{ boxShadow: 'none', border: '1px solid #e0e0e0' }}>
         <Table>
           <TableHead>
@@ -358,29 +322,29 @@ const Documents: React.FC = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {filteredRows.map((row, index) => (
+            {rows.map((row, index) => (
               <TableRow key={row.id}>
                 <TableCell>{index + 1 + page * rowsPerPage}</TableCell>
                 <TableCell>{row.title}</TableCell>
                 <TableCell>{row.workgroup_name}</TableCell>
-                <TableCell>{row.deliverable_name || "-"}</TableCell>
-                <TableCell>{format(new Date(row.created_at), "dd MMM yyyy")}</TableCell>
+                <TableCell>{row.deliverable_name || '-'}</TableCell>
+                <TableCell>{format(new Date(row.created_at), 'dd MMM yyyy')}</TableCell>
                 <TableCell>{row.creator_name}</TableCell>
                 <TableCell>
                   <Chip
-                    label={row.status === 2 ? "Approved" : row.status === 1 ? "Pending" : "Rejected"}
+                    label={row.status === 2 ? 'Approved' : row.status === 1 ? 'Pending' : 'Rejected'}
                     size="small"
                     sx={{
-                      color: row.status === 2 ? "green" : row.status === 1 ? "#ff5e00" : "#bf1000",
-                      backgroundColor: row.status === 2 ? "#ccffc9" : row.status === 1 ? "#ffe0a6" : "#fca69f",
+                      color: row.status === 2 ? 'green' : row.status === 1 ? '#ff5e00' : '#bf1000',
+                      backgroundColor: row.status === 2 ? '#ccffc9' : row.status === 1 ? '#ffe0a6' : '#fca69f',
                     }}
                   />
                 </TableCell>
                 <TableCell>
                   {row.public_at === null ? (
-                    <CancelOutlinedIcon sx={{ color: "red" }} />
+                    <CancelOutlinedIcon sx={{ color: 'red' }} />
                   ) : (
-                    <CheckCircleOutlineIcon sx={{ color: "green" }} />
+                    <CheckCircleOutlineIcon sx={{ color: 'green' }} />
                   )}
                 </TableCell>
                 <TableCell align="center">

@@ -1,23 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {
-  Box,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableRow,
-  TableHead,
-  TableFooter,
-  TablePagination,
-  Paper,
-  InputAdornment,
-  IconButton,
-  Chip,
-  CircularProgress,
-  TextField,
-  MenuItem,
-  Button,
-} from '@mui/material';
+import {Box,Table,TableBody,TableCell,TableContainer,TableRow,TableHead,TableFooter,TablePagination,Paper,InputAdornment,IconButton,Chip,CircularProgress,TextField,MenuItem,Button,} from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import TuneIcon from '@mui/icons-material/Tune';
 import { KeyboardArrowLeft, KeyboardArrowRight, Edit, Delete, Add } from '@mui/icons-material';
@@ -33,14 +15,12 @@ interface RowData {
   status: number;
   invite_accepted_at: string | null;
 }
-
 interface Pagination {
   currentPage: number;
   perPage: number;
   totalCount: number;
   totalPages: number;
 }
-
 interface PaginatedResponse {
   data: {
     memberUsers: RowData[];
@@ -280,11 +260,10 @@ const Users: React.FC = () => {
           />
           <Button
             variant="contained"
-            color="primary"
             startIcon={<Add />}
-            sx={{ textTransform: 'none' }}
+            sx={{ textTransform: 'none', backgroundColor:"black" ,color:"white" }}
           >
-            + Add User
+            Add User
           </Button>
         </Box>
       </Box>
