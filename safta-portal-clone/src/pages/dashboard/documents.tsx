@@ -277,8 +277,6 @@ const Documents: React.FC = () => {
             Reset
           </Button>
         </Box>
-
-        {/* Search Box */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, ml: 'auto' }}>
           <TextField
             variant="outlined"
@@ -304,8 +302,6 @@ const Documents: React.FC = () => {
           />
         </Box>
       </Box>
-
-      {/* Table Section */}
       <TableContainer component={Paper} sx={{ boxShadow: 'none', border: '1px solid #e0e0e0' }}>
         <Table>
           <TableHead>
