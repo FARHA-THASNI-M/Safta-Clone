@@ -61,7 +61,6 @@ const Documents: React.FC = () => {
   });
   const [workgroups, setWorkgroups] = useState<Workgroup[]>([]);
 
-  // Fetch workgroups
   useEffect(() => {
     const fetchWorkgroups = async () => {
       try {
@@ -88,19 +87,16 @@ const Documents: React.FC = () => {
         size: rowsPerPage.toString(),
       };
 
-      // Add search query parameter only if it's not empty
       if (searchQuery) {
         queryParams.q = searchQuery;
       }
 
-      // Add workgroupId filter if it's selected
       if (filters.workgroupId) {
         queryParams.workgroupId = filters.workgroupId;
       }
 
-      // Add status filter if it's selected
       if (filters.status) {
-        queryParams.status = filters.status;  // Maps directly to status: 1, 2, or 3
+        queryParams.status = filters.status;  
       }
 
       const response = await axiosInstance.get<PaginatedResponse>(
