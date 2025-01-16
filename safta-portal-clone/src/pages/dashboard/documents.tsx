@@ -2,11 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { Box, Table, TableBody, TableCell, TableContainer, TableRow, TableHead, TableFooter, TablePagination, Paper, InputAdornment, IconButton, TextField, CircularProgress, Chip, Button, MenuItem } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import TuneIcon from '@mui/icons-material/Tune';
-import { KeyboardArrowLeft, KeyboardArrowRight, Edit, Delete } from '@mui/icons-material';
+import { Edit, Delete } from '@mui/icons-material';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
 import { format } from 'date-fns';
-import axiosInstance from '../../api/axios'; 
+import axiosInstance from '../../api/axios';
+import TablePaginationActions from '../../components/Pagination';  
 
 interface RowData {
   id: number;
@@ -33,74 +34,16 @@ interface PaginatedResponse {
   };
 }
 
+interface Workgroup {
+  id: string;
+  name: string;
+}
+
 interface Filters {
   date: string;
-  workgroup: string;
+  workgroupId: string;
   status: string;
 }
-
-interface TablePaginationActionsProps {
-  count: number;
-  page: number;
-  rowsPerPage: number;
-  onPageChange: (event: React.MouseEvent<HTMLButtonElement> | null, newPage: number) => void;
-}
-
-const TablePaginationActions: React.FC<TablePaginationActionsProps> = ({ count, page, rowsPerPage, onPageChange }) => {
-  const totalPages = Math.ceil(count / rowsPerPage);
-
-  const handleArrowButtonClick = (direction: 'back' | 'next') => {
-    const newPage = direction === 'back' ? page - 1 : page + 1;
-    onPageChange(null, newPage);
-  };
-  const handlePageClick = (event: React.MouseEvent<HTMLDivElement>, pageNumber: number) => {
-    onPageChange(null, pageNumber);
-  };
-
-  return (
-    <Box sx={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: '4px', ml: 2.5 }}>
-      <IconButton
-        size="small"
-        onClick={() => handleArrowButtonClick('back')}
-        disabled={page === 0}
-        sx={{ color: '#666' }}
-      >
-        <KeyboardArrowLeft />
-      </IconButton>
-      {Array.from({ length: totalPages }, (_, i) => i).map((pageNum) => (
-        <Box
-          key={pageNum}
-          onClick={(event) => handlePageClick(event, pageNum)}
-          sx={{
-            cursor: 'pointer',
-            width: '32px',
-            height: '24px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: pageNum === page ? '#000' : 'transparent',
-            color: pageNum === page ? '#fff' : '#666',
-            fontSize: '0.875rem',
-            borderRadius: '4px',
-            '&:hover': {
-              backgroundColor: pageNum === page ? '#000' : '#f5f5f5',
-            },
-          }}
-        >
-          {pageNum + 1}
-        </Box>
-      ))}
-      <IconButton
-        size="small"
-        onClick={() => handleArrowButtonClick('next')}
-        disabled={page >= totalPages - 1}
-        sx={{ color: '#666' }}
-      >
-        <KeyboardArrowRight />
-      </IconButton>
-    </Box>
-  );
-};
 
 const Documents: React.FC = () => {
   const [page, setPage] = useState<number>(0);
@@ -113,20 +56,53 @@ const Documents: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [filters, setFilters] = useState<Filters>({
     date: '',
-    workgroup: '',
+    workgroupId: '',
     status: '',
   });
+  const [workgroups, setWorkgroups] = useState<Workgroup[]>([]);
+
+  // Fetch workgroups
+  useEffect(() => {
+    const fetchWorkgroups = async () => {
+      try {
+        const response = await axiosInstance.get('https://dev-portal.safta.sa/api/v1/workgroups/list?lang=en');
+        setWorkgroups(response.data.data.workgroups);
+      } catch (err) {
+        setError('Failed to fetch workgroups.');
+        console.error('Error fetching workgroups:', err);
+      }
+    };
+    fetchWorkgroups();
+  }, []);
 
   useEffect(() => {
     fetchDocuments();
-  }, [page, rowsPerPage, filters, searchQuery]);  
+  }, [page, rowsPerPage, filters, searchQuery]);
 
   const fetchDocuments = async (): Promise<void> => {
     try {
       setLoading(true);
+      const queryParams: Record<string, string> = {
+        lang: 'en',
+        page: (page + 1).toString(),
+        size: rowsPerPage.toString(),
+      };
+
+      // Add search query parameter only if it's not empty
+      if (searchQuery) {
+        queryParams.q = searchQuery;
+      }
+
+      // Add workgroupId filter if it's selected
+      if (filters.workgroupId) {
+        queryParams.workgroupId = filters.workgroupId;
+      }
+
       const response = await axiosInstance.get<PaginatedResponse>(
-        `/documents?lang=en&page=${page + 1}&size=${rowsPerPage}&q=${searchQuery}`
+        '/documents',
+        { params: queryParams }
       );
+
       const data = response.data.data;
       setRows(data.documents);
       setTotalResults(data.pagination.totalCount);
@@ -184,7 +160,7 @@ const Documents: React.FC = () => {
   const handleResetFilters = () => {
     setFilters({
       date: '',
-      workgroup: '',
+      workgroupId: '',
       status: '',
     });
     setSearchQuery('');
@@ -229,9 +205,9 @@ const Documents: React.FC = () => {
           <TextField
             select
             size="small"
-            value={filters.workgroup}
+            value={filters.workgroupId}
             onChange={handleFilterChange}
-            name="workgroup"
+            name="workgroupId"
             defaultValue=""
             sx={{
               width: '150px',
@@ -240,23 +216,12 @@ const Documents: React.FC = () => {
               },
             }}
           >
-            <MenuItem value="">Working Groups</MenuItem>
-          </TextField>
-          <TextField
-            select
-            size="small"
-            value={filters.status}
-            onChange={handleFilterChange}
-            name="status"
-            defaultValue=""
-            sx={{
-              width: '150px',
-              '&:hover .MuiOutlinedInput-notchedOutline': {
-                borderColor: 'black',
-              },
-            }}
-          >
-            <MenuItem value="">Status</MenuItem>
+            <MenuItem value="">Select Workgroup</MenuItem>
+            {workgroups.map((workgroup) => (
+              <MenuItem key={workgroup.id} value={workgroup.id}>
+                {workgroup.name}
+              </MenuItem>
+            ))}
           </TextField>
           <Button
             variant="outlined"
