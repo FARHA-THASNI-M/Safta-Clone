@@ -98,6 +98,11 @@ const Documents: React.FC = () => {
         queryParams.workgroupId = filters.workgroupId;
       }
 
+      // Add status filter if it's selected
+      if (filters.status) {
+        queryParams.status = filters.status;  // Maps directly to status: 1, 2, or 3
+      }
+
       const response = await axiosInstance.get<PaginatedResponse>(
         '/documents',
         { params: queryParams }
@@ -222,6 +227,25 @@ const Documents: React.FC = () => {
                 {workgroup.name}
               </MenuItem>
             ))}
+          </TextField>
+          <TextField
+            select
+            size="small"
+            value={filters.status}
+            onChange={handleFilterChange}
+            name="status"
+            defaultValue=""
+            sx={{
+              width: '150px',
+              '&:hover .MuiOutlinedInput-notchedOutline': {
+                borderColor: 'black',
+              },
+            }}
+          >
+            <MenuItem value="">Select Status</MenuItem>
+            <MenuItem value="1">Pending</MenuItem>
+            <MenuItem value="2">Approved</MenuItem>
+            <MenuItem value="3">Rejected</MenuItem>
           </TextField>
           <Button
             variant="outlined"
