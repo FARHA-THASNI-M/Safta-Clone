@@ -7,7 +7,8 @@ import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
 import { format } from 'date-fns';
 import axiosInstance from '../../api/axios';
-import TablePaginationActions from '../../components/Pagination';  
+import TablePaginationActions from '../../components/Pagination';
+import Editor from '../../components/Editor';
 
 interface RowData {
   id: number;
@@ -60,6 +61,8 @@ const Documents: React.FC = () => {
     status: '',
   });
   const [workgroups, setWorkgroups] = useState<Workgroup[]>([]);
+  const [isEditorOpen, setIsEditorOpen] = useState<boolean>(false);
+  const [selectedDocument, setSelectedDocument] = useState<RowData | null>(null);
 
   useEffect(() => {
     const fetchWorkgroups = async () => {
@@ -130,6 +133,16 @@ const Documents: React.FC = () => {
     } finally {
       setDeleting(null);
     }
+  };
+
+  const handleEdit = (document: RowData) => {
+    setSelectedDocument(document);
+    setIsEditorOpen(true);
+  };
+
+  const handleEditorClose = () => {
+    setIsEditorOpen(false);
+    setSelectedDocument(null);
   };
 
   const handleChangePage = (
@@ -210,14 +223,17 @@ const Documents: React.FC = () => {
             onChange={handleFilterChange}
             name="workgroupId"
             defaultValue=""
+            label="Working Groups"
             sx={{
               width: '150px',
               '&:hover .MuiOutlinedInput-notchedOutline': {
-                borderColor: 'black',
+                borderColor: 'grey',
+              },
+              '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                borderColor: 'black', 
               },
             }}
           >
-            <MenuItem value="">Select Workgroup</MenuItem>
             {workgroups.map((workgroup) => (
               <MenuItem key={workgroup.id} value={workgroup.id}>
                 {workgroup.name}
@@ -231,14 +247,17 @@ const Documents: React.FC = () => {
             onChange={handleFilterChange}
             name="status"
             defaultValue=""
+            label="Status"
             sx={{
               width: '150px',
               '&:hover .MuiOutlinedInput-notchedOutline': {
-                borderColor: 'black',
+                borderColor: 'grey',
+              },
+              '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                borderColor: 'black', 
               },
             }}
           >
-            <MenuItem value="">Select Status</MenuItem>
             <MenuItem value="1">Pending</MenuItem>
             <MenuItem value="2">Approved</MenuItem>
             <MenuItem value="3">Rejected</MenuItem>
@@ -247,14 +266,9 @@ const Documents: React.FC = () => {
             variant="outlined"
             onClick={handleResetFilters}
             sx={{
-              backgroundColor: '#f5f5f5',
-              color: '#666',
+              backgroundColor: 'lightgrey',
+              color: "darkgray",
               border: '1px solid #e0e0e0',
-              '&:hover': {
-                backgroundColor: '#eeeeee',
-                border: '1px solid #e0e0e0',
-              },
-              textTransform: 'none',
               minWidth: '80px',
             }}
           >
@@ -328,7 +342,7 @@ const Documents: React.FC = () => {
                   )}
                 </TableCell>
                 <TableCell align="center">
-                  <IconButton size="small">
+                  <IconButton size="small" onClick={() => handleEdit(row)}>
                     <Edit />
                   </IconButton>
                   <IconButton
@@ -384,6 +398,12 @@ const Documents: React.FC = () => {
           </TableFooter>
         </Table>
       </TableContainer>
+
+      <Editor
+        open={isEditorOpen}
+        onClose={handleEditorClose}
+        selectedDocument={selectedDocument}
+      />
     </Box>
   );
 };
