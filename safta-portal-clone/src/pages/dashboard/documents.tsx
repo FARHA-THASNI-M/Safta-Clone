@@ -8,7 +8,7 @@ import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
 import { format } from 'date-fns';
 import axiosInstance from '../../api/axios';
 import TablePaginationActions from '../../components/Pagination';
-import Editor from '../../components/Editor';  // Import Editor
+import Editor from '../../components/Editor';  
 
 interface RowData {
   id: number;
