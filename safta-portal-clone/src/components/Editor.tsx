@@ -209,38 +209,36 @@ const Editor: React.FC<EditorProps> = ({ open, onClose, selectedDocument }) => {
           </IconButton>
         </Box>
 
-        <Box sx={{ flex: 1, overflow: 'auto' }}>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <Box sx={{ position: 'relative' }}>
-              <Typography sx={{ mb: 0.5, fontSize: '14px' }}>Title<span style={{color: 'red'}}>*</span></Typography>
+        <Box sx={{ flex: 1, mt:3, overflow: 'auto' }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            <Box sx={{ display:'flex', justifyContent:'space-between',gap: 2}}>
+            <Box sx={{flex: 1}}>
+            <Box sx={{display:'flex', justifyContent:'space-between'}}>
+              <Typography>Title<span style={{color: 'red'}}>*</span></Typography>
+              <Typography variant="caption" color="textSecondary">
+                {formData.title.length}/150
+              </Typography>
+              </Box>
               <TextField
+                required
                 fullWidth
-                size="small"
                 value={formData.title}
                 onChange={handleChange('title')}
-                placeholder="title"
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    backgroundColor: '#fff'
-                  }
-                }}
               />
             </Box>
-
-            <Box>
-              <Typography sx={{ mb: 0.5, fontSize: '14px' }}>عنوان المستند</Typography>
+            <Box sx={{ flex:1}}>
+            <Box sx={{ display:'flex', justifyContent:'space-between'}}>
+              <Typography variant="caption" color="textSecondary">
+                {formData.title.length}/150
+              </Typography>
+              <Typography >عنوان المستند</Typography>
+              </Box>
               <TextField
                 fullWidth
-                size="small"
                 value={formData.title_ar}
                 onChange={handleChange('title_ar')}
-                placeholder=""
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    backgroundColor: '#fff'
-                  }
-                }}
               />
+            </Box>
             </Box>
 
             <Box>
@@ -323,40 +321,38 @@ const Editor: React.FC<EditorProps> = ({ open, onClose, selectedDocument }) => {
               </Box>
             )}
 
-            <Box sx={{ position: 'relative' }}>
-              <Typography sx={{ mb: 0.5, fontSize: '14px' }}>Description</Typography>
+            <Box sx={{ display: 'flex', justifyContent:'space-between', gap: 2 }}>
+            <Box sx={{ flex: 1}}>
+                <Box sx={{ display: 'flex', justifyContent:'space-between'}}>
+              <Typography >Description</Typography>
+              <Typography variant="caption" color="textSecondary">
+                {formData.description?.length || 0}/600
+              </Typography>
+              </Box>
               <TextField
                 fullWidth
                 multiline
                 rows={4}
                 value={formData.description}
                 onChange={handleChange('description')}
-                placeholder="Enter description"
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    backgroundColor: '#fff'
-                  }
-                }}
               />
             </Box>
-
-            <Box>
-              <Typography sx={{ mb: 0.5, fontSize: '14px' }}>الوصف</Typography>
+            <Box sx={{ flex:1}}>
+            <Box sx={{ display:'flex', justifyContent:'space-between'}}>
+                <Typography variant="caption" color="textSecondary">
+                    {formData.description_ar?.length || 0}/600
+                </Typography>
+              <Typography>الوصف</Typography>
+              </Box>
               <TextField
                 fullWidth
                 multiline
                 rows={4}
                 value={formData.description_ar}
                 onChange={handleChange('description_ar')}
-                placeholder="Enter description in Arabic"
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    backgroundColor: '#fff'
-                  }
-                }}
               />
             </Box>
-
+            </Box>
             <FormControlLabel
               control={
                 <Checkbox
@@ -367,7 +363,7 @@ const Editor: React.FC<EditorProps> = ({ open, onClose, selectedDocument }) => {
                   sx={{
                     color: '#000',
                     '&.Mui-checked': {
-                      color: '#000',
+                      color: 'black',
                     },
                   }}
                 />
@@ -380,25 +376,18 @@ const Editor: React.FC<EditorProps> = ({ open, onClose, selectedDocument }) => {
         </Box>
 
         <Box sx={{
-          mt: 2,
+          mt: 3,
           pt: 2,
           display: 'flex',
-          gap: 1,
-          borderTop: '1px solid #eee',
+          gap: 2,
         }}>
           <Button
             variant="outlined"
             onClick={handleReset}
             sx={{
-              flex: 1,
-              textTransform: 'none',
-              color: '#000',
-              borderColor: '#eee',
-              height: '36px',
-              '&:hover': {
-                borderColor: '#ccc',
-                backgroundColor: 'transparent'
-              }
+                color: 'black',
+                borderColor: 'black',
+              
             }}
           >
             Reset
@@ -406,12 +395,9 @@ const Editor: React.FC<EditorProps> = ({ open, onClose, selectedDocument }) => {
           <Button
             variant="contained"
             onClick={handleSubmit}
-            sx={{
-              flex: 1,
-              textTransform: 'none',
-              bgcolor: '#000',
-              height: '36px',
-              color:'white',
+            sx={{ 
+                bgcolor: 'black',
+                color: 'white',
             }}
           >
             Update
