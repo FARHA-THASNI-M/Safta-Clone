@@ -12,6 +12,7 @@ import Editor from '../../components/Editor';  // Import Editor
 
 interface RowData {
   id: number;
+  workgroup_id: number;
   title: string;
   workgroup_name: string;
   deliverable_name: string | null;
@@ -61,10 +62,9 @@ const Documents: React.FC = () => {
     status: '',
   });
   const [workgroups, setWorkgroups] = useState<Workgroup[]>([]);
-  const [isEditorOpen, setIsEditorOpen] = useState<boolean>(false);  // Editor state
-  const [selectedDocument, setSelectedDocument] = useState<RowData | null>(null);  // Selected document
+  const [isEditorOpen, setIsEditorOpen] = useState<boolean>(false);  
+  const [selectedDocument, setSelectedDocument] = useState<RowData | null>(null); 
 
-  // Fetch Workgroups
   useEffect(() => {
     const fetchWorkgroups = async () => {
       try {
@@ -78,7 +78,6 @@ const Documents: React.FC = () => {
     fetchWorkgroups();
   }, []);
 
-  // Fetch Documents
   useEffect(() => {
     fetchDocuments();
   }, [page, rowsPerPage, filters, searchQuery]);
@@ -121,13 +120,13 @@ const Documents: React.FC = () => {
     }
   };
 
-  const handleDelete = async (id: number): Promise<void> => {
+  const handleDelete = async (id: number, workgroup_id: number): Promise<void> => {
     if (!window.confirm('Are you sure you want to delete this document?')) {
       return;
     }
     try {
       setDeleting(id);
-      await axiosInstance.delete(`/documents/${id}`);
+      await axiosInstance.delete(`/workgroups/${workgroup_id}/documents/${id}?lang=en`);
       fetchDocuments();
     } catch (err) {
       setError('Failed to delete document');
@@ -138,13 +137,13 @@ const Documents: React.FC = () => {
   };
 
   const handleEdit = (document: RowData) => {
-    setSelectedDocument(document);  // Set the selected document
-    setIsEditorOpen(true);  // Open the editor
+    setSelectedDocument(document);  
+    setIsEditorOpen(true);  
   };
 
   const handleEditorClose = () => {
-    setIsEditorOpen(false);  // Close the editor
-    setSelectedDocument(null);  // Reset the selected document
+    setIsEditorOpen(false);  
+    setSelectedDocument(null);  
   };
 
   const handleChangePage = (
@@ -349,7 +348,7 @@ const Documents: React.FC = () => {
                   </IconButton>
                   <IconButton
                     size="small"
-                    onClick={() => handleDelete(row.id)}
+                    onClick={() => handleDelete(row.id, row.workgroup_id)}
                     disabled={deleting === row.id}
                   >
                     {deleting === row.id ? (
@@ -401,7 +400,6 @@ const Documents: React.FC = () => {
         </Table>
       </TableContainer>
 
-      {/* Editor Modal */}
       <Editor
         open={isEditorOpen}
         onClose={handleEditorClose}

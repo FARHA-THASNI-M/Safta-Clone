@@ -12,7 +12,7 @@ import {
   MenuItem,
   Select,
   InputLabel,
-  FormControl
+  FormControl,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
@@ -144,7 +144,7 @@ const Editor: React.FC<EditorProps> = ({ open, onClose, selectedDocument }) => {
         sx: {
           width: { xs: '100%', sm: 600 },
           padding: 3,
-          overflow: 'visible', // Ensure content is not clipped
+          overflow: 'visible', 
         },
       }}
     >
@@ -222,43 +222,58 @@ const Editor: React.FC<EditorProps> = ({ open, onClose, selectedDocument }) => {
               label="Public"
             />
 
-            {/* File Upload Section */}
-            <Box>
-              <Button
-                component="label"
-                sx={{
-                  fontWeight: 'bold',
-                  padding: '8px 16px', // Adding padding to increase button size
-                  backgroundColor: '#f5f5f5', // Adding background color to make it more visible
-                  borderRadius: '4px',
-                  display: 'inline-flex', // Ensuring it's aligned properly
-                  alignItems: 'center',
-                }}
-              >
-                Upload document
-                <input
-                  type="file"
-                  hidden
-                  onChange={handleFileSelect}
-                  accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-                />
-              </Button>
-              {selectedFile && (
-                <Paper sx={{
-                  p: 1,
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  backgroundColor: '#f5f5f5',
-                  marginTop: 1, // Adds spacing between file name and button
-                }}>
-                  <Typography variant="body2">{selectedFile.name}</Typography>
-                  <IconButton size="small" onClick={handleRemoveFile}>
-                    <DeleteOutlineIcon />
-                  </IconButton>
-                </Paper>
-              )}
-            </Box>
+                <Box>
+                <Typography fontWeight="bold" sx={{ mb: 1 }}>
+                    Upload document <span style={{color:'red'}}>*</span>
+                </Typography>
+                <Button
+                     component="label"
+                      sx={{
+                            fontWeight: 'bold',
+                            padding: '10px 16px',
+                            backgroundColor: '#f5f5f5',
+                            border: '1px dashed #ccc',
+                            borderRadius: '4px',
+                            width: '100%', 
+                            textAlign: 'center',
+                            color: '#666',
+                            display: 'inline-block',
+                                    }}
+                                     >
+                             Upload document
+                          <input
+                               type="file"
+                               hidden
+                               onChange={handleFileSelect}
+                               accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                                  />
+                 </Button>
+                {selectedFile && (
+                  <Paper
+                      sx={{
+                        p: 1.5,
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        backgroundColor: '#fff',
+                        border: '1px solid #ccc',
+                        borderRadius: '4px',
+                        marginTop: 2,
+                        }}
+                        >
+              <Typography
+                variant="body2"
+                sx={{ fontWeight: 'bold', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', flex: 1 }}
+                  >
+                {selectedFile.name}
+                      </Typography>
+                      <IconButton size="small" onClick={handleRemoveFile}>
+                   <DeleteOutlineIcon />
+                      </IconButton>
+                     </Paper>
+                        )}
+        </Box>
+
           </Box>
         </Box>
 
