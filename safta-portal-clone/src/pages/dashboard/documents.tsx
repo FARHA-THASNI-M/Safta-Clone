@@ -8,7 +8,7 @@ import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
 import { format } from 'date-fns';
 import axiosInstance from '../../api/axios';
 import TablePaginationActions from '../../components/Pagination';
-import Editor from '../../components/Editor';
+import Editor from '../../components/Editor';  // Import Editor
 
 interface RowData {
   id: number;
@@ -61,9 +61,10 @@ const Documents: React.FC = () => {
     status: '',
   });
   const [workgroups, setWorkgroups] = useState<Workgroup[]>([]);
-  const [isEditorOpen, setIsEditorOpen] = useState<boolean>(false);
-  const [selectedDocument, setSelectedDocument] = useState<RowData | null>(null);
+  const [isEditorOpen, setIsEditorOpen] = useState<boolean>(false);  // Editor state
+  const [selectedDocument, setSelectedDocument] = useState<RowData | null>(null);  // Selected document
 
+  // Fetch Workgroups
   useEffect(() => {
     const fetchWorkgroups = async () => {
       try {
@@ -77,6 +78,7 @@ const Documents: React.FC = () => {
     fetchWorkgroups();
   }, []);
 
+  // Fetch Documents
   useEffect(() => {
     fetchDocuments();
   }, [page, rowsPerPage, filters, searchQuery]);
@@ -136,13 +138,13 @@ const Documents: React.FC = () => {
   };
 
   const handleEdit = (document: RowData) => {
-    setSelectedDocument(document);
-    setIsEditorOpen(true);
+    setSelectedDocument(document);  // Set the selected document
+    setIsEditorOpen(true);  // Open the editor
   };
 
   const handleEditorClose = () => {
-    setIsEditorOpen(false);
-    setSelectedDocument(null);
+    setIsEditorOpen(false);  // Close the editor
+    setSelectedDocument(null);  // Reset the selected document
   };
 
   const handleChangePage = (
@@ -399,6 +401,7 @@ const Documents: React.FC = () => {
         </Table>
       </TableContainer>
 
+      {/* Editor Modal */}
       <Editor
         open={isEditorOpen}
         onClose={handleEditorClose}
