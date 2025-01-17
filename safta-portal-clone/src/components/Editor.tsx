@@ -16,6 +16,7 @@ import {
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import axiosInstance from '../api/axios';
 
 interface EditorProps {
@@ -190,106 +191,125 @@ const Editor: React.FC<EditorProps> = ({ open, onClose, selectedDocument }) => {
       onClose={onClose}
       PaperProps={{
         sx: {
-          width: { xs: '100%', sm: 600 },
-          padding: 3,
-          overflow: 'visible',
+          width: { xs: '100%', sm: 450 },
+          padding: '20px 24px',
+          bgcolor: '#fff',
         },
       }}
     >
       <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+        {/* Header */}
         <Box sx={{
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          pb: 2
+          mb: 2
         }}>
-          <Typography fontWeight="bold">Update Document</Typography>
-          <IconButton onClick={onClose} size="small">
-            <CloseIcon />
+          <Typography sx={{ fontSize: '16px', fontWeight: 500 }}>
+            Update Document
+          </Typography>
+          <IconButton onClick={onClose} size="small" sx={{ p: 0 }}>
+            <CloseIcon sx={{ fontSize: 18 }} />
           </IconButton>
         </Box>
 
-        <Box sx={{ flex: 1, mt: 3, overflow: 'auto' }}>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-            <TextField
-              required
-              fullWidth
-              label="Title"
-              value={formData.title}
-              onChange={handleChange('title')}
-            />
-
-            <TextField
-              required
-              fullWidth
-              label="عنوان المستند"
-              value={formData.title_ar}
-              onChange={handleChange('title_ar')}
-            />
-
-            <FormControl fullWidth>
-              <InputLabel>Deliverable</InputLabel>
-              <Select
-                value={formData.deliverable}
-                onChange={handleChange('deliverable')}
-              >
-                {deliverables.map((deliverable) => (
-                  <MenuItem key={deliverable.id} value={deliverable.name}>
-                    {deliverable.name}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-
-            <TextField
-              fullWidth
-              label="Description"
-              multiline
-              rows={4}
-              value={formData.description}
-              onChange={handleChange('description')}
-            />
-
-            <TextField
-              fullWidth
-              label="الوصف"
-              multiline
-              rows={4}
-              value={formData.description_ar}
-              onChange={handleChange('description_ar')}
-            />
-
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={formData.isPublic}
-                  onChange={(e) =>
-                    setFormData((prev) => ({ ...prev, isPublic: e.target.checked }))
+        {/* Form Content */}
+        <Box sx={{ flex: 1, overflow: 'auto' }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            {/* Title Fields */}
+            <Box sx={{ position: 'relative' }}>
+              <Typography sx={{ 
+                position: 'absolute', 
+                right: 0, 
+                top: -18, 
+                fontSize: '12px', 
+                color: '#666' 
+              }}>
+                5/150  10/150
+              </Typography>
+              <Typography sx={{ mb: 0.5, fontSize: '14px' }}>Title*</Typography>
+              <TextField
+                fullWidth
+                size="small"
+                value={formData.title}
+                onChange={handleChange('title')}
+                placeholder="title"
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    backgroundColor: '#fff'
                   }
-                />
-              }
-              label="Public"
-            />
+                }}
+              />
+            </Box>
 
             <Box>
-              <Typography fontWeight="bold" sx={{ mb: 1 }}>
-                Upload document <span style={{ color: 'red' }}>*</span>
+              <Typography sx={{ mb: 0.5, fontSize: '14px' }}>عنوان المستند</Typography>
+              <TextField
+                fullWidth
+                size="small"
+                value={formData.title_ar}
+                onChange={handleChange('title_ar')}
+                placeholder="asdasdsad"
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    backgroundColor: '#fff'
+                  }
+                }}
+              />
+            </Box>
+
+            {/* Deliverable Dropdown */}
+            <Box>
+              <Typography sx={{ mb: 0.5, fontSize: '14px' }}>Deliverable</Typography>
+              <FormControl fullWidth size="small">
+                <Select
+                  value={formData.deliverable}
+                  onChange={handleChange('deliverable')}
+                  displayEmpty
+                  sx={{ 
+                    backgroundColor: '#fff',
+                    '& .MuiSelect-select': {
+                      padding: '8.5px 14px',
+                    }
+                  }}
+                >
+                  <MenuItem value="">
+                    <em>Select deliverable</em>
+                  </MenuItem>
+                  {deliverables.map((deliverable) => (
+                    <MenuItem key={deliverable.id} value={deliverable.name}>
+                      {deliverable.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Box>
+
+            {/* Upload Document Section */}
+            <Box sx={{ 
+              backgroundColor: '#F8F9FA',
+              borderRadius: '4px',
+              p: 2,
+              textAlign: 'center'
+            }}>
+              <Typography sx={{ fontSize: '12px', color: '#666', mb: 1 }}>
+                Max. Doc Size 10 mb
               </Typography>
               <Button
                 component="label"
                 sx={{
-                  fontWeight: 'bold',
-                  padding: '10px 16px',
-                  backgroundColor: '#f5f5f5',
-                  border: '1px dashed #ccc',
-                  borderRadius: '4px',
-                  width: '100%',
-                  textAlign: 'center',
-                  color: '#666',
-                  display: 'inline-block',
+                  color: '#000',
+                  borderColor: '#000',
+                  textTransform: 'none',
+                  fontSize: '14px',
+                  '&:hover': {
+                    backgroundColor: 'transparent',
+                    borderColor: '#000'
+                  }
                 }}
+                variant="outlined"
               >
-                Upload document
+                Upload document*
                 <input
                   type="file"
                   hidden
@@ -297,52 +317,142 @@ const Editor: React.FC<EditorProps> = ({ open, onClose, selectedDocument }) => {
                   accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
                 />
               </Button>
-
-              {(selectedFile || existingFile) && (
-                <Paper
-                  sx={{
-                    p: 1.5,
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    backgroundColor: '#fff',
-                    border: '1px solid #ccc',
-                    borderRadius: '4px',
-                    marginTop: 2,
-                  }}
-                >
-                  <Typography
-                    variant="body2"
-                    sx={{ fontWeight: 'bold', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', flex: 1 }}
-                  >
-                    {selectedFile ? selectedFile.name : existingFile?.original_name}
-                  </Typography>
-                  <IconButton size="small" onClick={handleRemoveFile}>
-                    <DeleteOutlineIcon />
-                  </IconButton>
-                </Paper>
-              )}
             </Box>
+
+            {/* File Display */}
+            {(selectedFile || existingFile) && (
+              <Box sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1,
+                p: 1,
+                border: '1px solid #eee',
+                borderRadius: '4px'
+              }}>
+                <InsertDriveFileIcon sx={{ fontSize: 20 }} />
+                <Typography sx={{ 
+                  flex: 1,
+                  fontSize: '14px',
+                  textOverflow: 'ellipsis',
+                  overflow: 'hidden',
+                  whiteSpace: 'nowrap'
+                }}>
+                  {selectedFile ? selectedFile.name : existingFile?.original_name}
+                </Typography>
+                <IconButton 
+                  size="small" 
+                  onClick={handleRemoveFile}
+                  sx={{ p: 0 }}
+                >
+                  <CloseIcon sx={{ fontSize: 16 }} />
+                </IconButton>
+              </Box>
+            )}
+
+            {/* Description Fields */}
+            <Box sx={{ position: 'relative' }}>
+              <Typography sx={{ 
+                position: 'absolute', 
+                right: 0, 
+                top: -18, 
+                fontSize: '12px', 
+                color: '#666' 
+              }}>
+                0/800  0/800
+              </Typography>
+              <Typography sx={{ mb: 0.5, fontSize: '14px' }}>Description</Typography>
+              <TextField
+                fullWidth
+                multiline
+                rows={4}
+                value={formData.description}
+                onChange={handleChange('description')}
+                placeholder="Enter description"
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    backgroundColor: '#fff'
+                  }
+                }}
+              />
+            </Box>
+
+            <Box>
+              <Typography sx={{ mb: 0.5, fontSize: '14px' }}>الوصف</Typography>
+              <TextField
+                fullWidth
+                multiline
+                rows={4}
+                value={formData.description_ar}
+                onChange={handleChange('description_ar')}
+                placeholder="Enter description in Arabic"
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    backgroundColor: '#fff'
+                  }
+                }}
+              />
+            </Box>
+
+            {/* Public Checkbox */}
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={formData.isPublic}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, isPublic: e.target.checked }))
+                  }
+                  sx={{
+                    color: '#000',
+                    '&.Mui-checked': {
+                      color: '#000',
+                    },
+                  }}
+                />
+              }
+              label={
+                <Typography sx={{ fontSize: '14px' }}>Public</Typography>
+              }
+            />
           </Box>
         </Box>
 
+        {/* Action Buttons */}
         <Box sx={{
-          mt: 3,
+          mt: 2,
           pt: 2,
           display: 'flex',
-          gap: 2
+          gap: 1,
+          borderTop: '1px solid #eee',
         }}>
           <Button
             variant="outlined"
             onClick={handleReset}
-            sx={{ color: 'black', borderColor: 'divider' }}
+            sx={{
+              flex: 1,
+              textTransform: 'none',
+              color: '#000',
+              borderColor: '#eee',
+              height: '36px',
+              '&:hover': {
+                borderColor: '#ccc',
+                backgroundColor: 'transparent'
+              }
+            }}
           >
             Reset
           </Button>
           <Button
             variant="contained"
             onClick={handleSubmit}
-            sx={{ bgcolor: 'black', color: 'white' }}
+            sx={{
+              flex: 1,
+              textTransform: 'none',
+              bgcolor: '#000',
+              height: '36px',
+              '&:hover': {
+                bgcolor: '#222'
+              }
+            }}
           >
             Update
           </Button>
