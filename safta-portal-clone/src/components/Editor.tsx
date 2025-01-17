@@ -113,7 +113,7 @@ const Editor: React.FC<EditorProps> = ({ open, onClose, selectedDocument }) => {
 
   const handleSubmit = async () => {
     const formDataToSend = new FormData();
-    
+
     formDataToSend.append('title', formData.title);
     formDataToSend.append('title_ar', formData.title_ar);
     if (formData.deliverable) {
@@ -126,12 +126,13 @@ const Editor: React.FC<EditorProps> = ({ open, onClose, selectedDocument }) => {
       formDataToSend.append('description_ar', formData.description_ar);
     }
     formDataToSend.append('public_at', formData.isPublic ? new Date().toISOString() : '');
-    
+
     if (selectedFile) {
       formDataToSend.append('file', selectedFile);
     }
 
     try {
+      // 1. Make PATCH request to update the document
       await axiosInstance.patch(
         `/workgroups/${formData.workgroup_id}/documents/${formData.id}?lang=en`,
         formDataToSend,
@@ -141,7 +142,24 @@ const Editor: React.FC<EditorProps> = ({ open, onClose, selectedDocument }) => {
           },
         }
       );
+
       alert('Document updated successfully');
+
+      // 2. Make GET request to fetch the updated document data
+      const documentResponse = await axiosInstance.get(
+        `/workgroups/${formData.workgroup_id}/documents/${formData.id}?lang=en`
+      );
+      const updatedDocument = documentResponse.data.data.document;
+      console.log('Updated Document:', updatedDocument);
+
+      // 3. Make GET request to fetch the documents list with pagination
+      const documentsListResponse = await axiosInstance.get(
+        `/documents?lang=en&page=1&size=10`
+      );
+      const documentsList = documentsListResponse.data.data.documents;
+      console.log('Documents List:', documentsList);
+
+      // Close the editor after successful update
       onClose();
     } catch (error) {
       console.error('Error updating document:', error);
