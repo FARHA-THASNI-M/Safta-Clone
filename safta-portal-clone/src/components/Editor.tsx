@@ -8,14 +8,11 @@ import {
   Button,
   Checkbox,
   FormControlLabel,
-  Paper,
   MenuItem,
   Select,
-  InputLabel,
   FormControl,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
-import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import axiosInstance from '../api/axios';
 
@@ -191,21 +188,20 @@ const Editor: React.FC<EditorProps> = ({ open, onClose, selectedDocument }) => {
       onClose={onClose}
       PaperProps={{
         sx: {
-          width: { xs: '100%', sm: 450 },
-          padding: '20px 24px',
+          width: { xs: '100%', sm: 700 },
+          padding: '25px 35px',
           bgcolor: '#fff',
         },
       }}
     >
       <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-        {/* Header */}
         <Box sx={{
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
           mb: 2
         }}>
-          <Typography sx={{ fontSize: '16px', fontWeight: 500 }}>
+          <Typography sx={{ fontSize: '16px', fontWeight: 'bold' }}>
             Update Document
           </Typography>
           <IconButton onClick={onClose} size="small" sx={{ p: 0 }}>
@@ -213,21 +209,10 @@ const Editor: React.FC<EditorProps> = ({ open, onClose, selectedDocument }) => {
           </IconButton>
         </Box>
 
-        {/* Form Content */}
         <Box sx={{ flex: 1, overflow: 'auto' }}>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            {/* Title Fields */}
             <Box sx={{ position: 'relative' }}>
-              <Typography sx={{ 
-                position: 'absolute', 
-                right: 0, 
-                top: -18, 
-                fontSize: '12px', 
-                color: '#666' 
-              }}>
-                5/150  10/150
-              </Typography>
-              <Typography sx={{ mb: 0.5, fontSize: '14px' }}>Title*</Typography>
+              <Typography sx={{ mb: 0.5, fontSize: '14px' }}>Title<span style={{color: 'red'}}>*</span></Typography>
               <TextField
                 fullWidth
                 size="small"
@@ -249,7 +234,7 @@ const Editor: React.FC<EditorProps> = ({ open, onClose, selectedDocument }) => {
                 size="small"
                 value={formData.title_ar}
                 onChange={handleChange('title_ar')}
-                placeholder="asdasdsad"
+                placeholder=""
                 sx={{
                   '& .MuiOutlinedInput-root': {
                     backgroundColor: '#fff'
@@ -258,7 +243,6 @@ const Editor: React.FC<EditorProps> = ({ open, onClose, selectedDocument }) => {
               />
             </Box>
 
-            {/* Deliverable Dropdown */}
             <Box>
               <Typography sx={{ mb: 0.5, fontSize: '14px' }}>Deliverable</Typography>
               <FormControl fullWidth size="small">
@@ -273,11 +257,8 @@ const Editor: React.FC<EditorProps> = ({ open, onClose, selectedDocument }) => {
                     }
                   }}
                 >
-                  <MenuItem value="">
-                    <em>Select deliverable</em>
-                  </MenuItem>
                   {deliverables.map((deliverable) => (
-                    <MenuItem key={deliverable.id} value={deliverable.name}>
+                    <MenuItem key={deliverable.id} value={deliverable.name}  >
                       {deliverable.name}
                     </MenuItem>
                   ))}
@@ -285,7 +266,6 @@ const Editor: React.FC<EditorProps> = ({ open, onClose, selectedDocument }) => {
               </FormControl>
             </Box>
 
-            {/* Upload Document Section */}
             <Box sx={{ 
               backgroundColor: '#F8F9FA',
               borderRadius: '4px',
@@ -298,18 +278,13 @@ const Editor: React.FC<EditorProps> = ({ open, onClose, selectedDocument }) => {
               <Button
                 component="label"
                 sx={{
-                  color: '#000',
-                  borderColor: '#000',
-                  textTransform: 'none',
+                  color: 'black',
+                  fontWeight:'bold',
                   fontSize: '14px',
-                  '&:hover': {
-                    backgroundColor: 'transparent',
-                    borderColor: '#000'
-                  }
                 }}
                 variant="outlined"
               >
-                Upload document*
+                Upload document<span style={{ color:'red'}}>*</span>
                 <input
                   type="file"
                   hidden
@@ -319,7 +294,6 @@ const Editor: React.FC<EditorProps> = ({ open, onClose, selectedDocument }) => {
               </Button>
             </Box>
 
-            {/* File Display */}
             {(selectedFile || existingFile) && (
               <Box sx={{
                 display: 'flex',
@@ -349,17 +323,7 @@ const Editor: React.FC<EditorProps> = ({ open, onClose, selectedDocument }) => {
               </Box>
             )}
 
-            {/* Description Fields */}
             <Box sx={{ position: 'relative' }}>
-              <Typography sx={{ 
-                position: 'absolute', 
-                right: 0, 
-                top: -18, 
-                fontSize: '12px', 
-                color: '#666' 
-              }}>
-                0/800  0/800
-              </Typography>
               <Typography sx={{ mb: 0.5, fontSize: '14px' }}>Description</Typography>
               <TextField
                 fullWidth
@@ -393,7 +357,6 @@ const Editor: React.FC<EditorProps> = ({ open, onClose, selectedDocument }) => {
               />
             </Box>
 
-            {/* Public Checkbox */}
             <FormControlLabel
               control={
                 <Checkbox
@@ -416,7 +379,6 @@ const Editor: React.FC<EditorProps> = ({ open, onClose, selectedDocument }) => {
           </Box>
         </Box>
 
-        {/* Action Buttons */}
         <Box sx={{
           mt: 2,
           pt: 2,
@@ -449,9 +411,7 @@ const Editor: React.FC<EditorProps> = ({ open, onClose, selectedDocument }) => {
               textTransform: 'none',
               bgcolor: '#000',
               height: '36px',
-              '&:hover': {
-                bgcolor: '#222'
-              }
+              color:'white',
             }}
           >
             Update
