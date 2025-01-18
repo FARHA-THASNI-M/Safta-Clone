@@ -11,10 +11,13 @@ import {
   MenuItem,
   Select,
   FormControl,
+  SelectChangeEvent,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import axiosInstance from '../api/axios';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 interface EditorProps {
   open: boolean;
@@ -54,8 +57,11 @@ const Editor: React.FC<EditorProps> = ({ open, onClose, selectedDocument }) => {
   const [existingFile, setExistingFile] = useState<DocumentFile | null>(null);
   const [deliverables, setDeliverables] = useState<any[]>([]);
 
+  
+
   useEffect(() => {
     if (selectedDocument?.workgroup_id && selectedDocument?.id) {
+        
       const fetchDocumentData = async () => {
         try {
           const [documentResponse, deliverablesResponse] = await Promise.all([
@@ -71,8 +77,12 @@ const Editor: React.FC<EditorProps> = ({ open, onClose, selectedDocument }) => {
             description: docData.description,
             description_ar: docData.description_ar,
             deliverable: docData.deliverable_name || '',
-            isPublic: !!docData.public_at
+            isPublic: !!docData.public_at, 
+            workgroup_id: docData?.workgroup_id || '',
+            id: docData?.id || 0,
           }));
+
+          
 
           if (docData.original_name && docData.file_url) {
             setExistingFile({
@@ -102,9 +112,7 @@ const Editor: React.FC<EditorProps> = ({ open, onClose, selectedDocument }) => {
     setExistingFile(null);
   };
 
-  const handleChange = (field: keyof DocumentType) => (
-    event: ChangeEvent<HTMLInputElement | { value: unknown }>
-  ) => {
+  const handleChange = (field: keyof DocumentType,event: SelectChangeEvent|ChangeEvent<HTMLInputElement | { value: unknown }>) =>  {
     setFormData((prev) => ({
       ...prev,
       [field]: event.target.value,
@@ -132,7 +140,6 @@ const Editor: React.FC<EditorProps> = ({ open, onClose, selectedDocument }) => {
     }
 
     try {
-      // 1. Make PATCH request to update the document
       await axiosInstance.patch(
         `/workgroups/${formData.workgroup_id}/documents/${formData.id}?lang=en`,
         formDataToSend,
@@ -143,27 +150,24 @@ const Editor: React.FC<EditorProps> = ({ open, onClose, selectedDocument }) => {
         }
       );
 
-      alert('Document updated successfully');
+      toast.success('Document updated successfully!');
 
-      // 2. Make GET request to fetch the updated document data
       const documentResponse = await axiosInstance.get(
         `/workgroups/${formData.workgroup_id}/documents/${formData.id}?lang=en`
       );
       const updatedDocument = documentResponse.data.data.document;
       console.log('Updated Document:', updatedDocument);
 
-      // 3. Make GET request to fetch the documents list with pagination
       const documentsListResponse = await axiosInstance.get(
         `/documents?lang=en&page=1&size=10`
       );
       const documentsList = documentsListResponse.data.data.documents;
       console.log('Documents List:', documentsList);
 
-      // Close the editor after successful update
       onClose();
     } catch (error) {
       console.error('Error updating document:', error);
-      alert('Failed to update document');
+      toast.error('Failed to update document.'); 
     }
   };
 
@@ -198,6 +202,9 @@ const Editor: React.FC<EditorProps> = ({ open, onClose, selectedDocument }) => {
       fetchDocumentData();
     }
   };
+
+  console.log(formData);
+  
 
   return (
     <Drawer
@@ -241,7 +248,7 @@ const Editor: React.FC<EditorProps> = ({ open, onClose, selectedDocument }) => {
                 required
                 fullWidth
                 value={formData.title}
-                onChange={handleChange('title')}
+                onChange={(e)=>handleChange('title',e)}
               />
             </Box>
             <Box sx={{ flex:1}}>
@@ -254,7 +261,7 @@ const Editor: React.FC<EditorProps> = ({ open, onClose, selectedDocument }) => {
               <TextField
                 fullWidth
                 value={formData.title_ar}
-                onChange={handleChange('title_ar')}
+                onChange={(e)=>handleChange('title_ar',e)}
               />
             </Box>
             </Box>
@@ -264,7 +271,7 @@ const Editor: React.FC<EditorProps> = ({ open, onClose, selectedDocument }) => {
               <FormControl fullWidth size="small">
                 <Select
                   value={formData.deliverable}
-                  onChange={handleChange('deliverable')}
+                  onChange={(e)=>handleChange('deliverable',e)}
                   displayEmpty
                   sx={{ 
                     backgroundColor: '#fff',
@@ -352,7 +359,7 @@ const Editor: React.FC<EditorProps> = ({ open, onClose, selectedDocument }) => {
                 multiline
                 rows={4}
                 value={formData.description}
-                onChange={handleChange('description')}
+                onChange={(e)=>handleChange('description',e)}
               />
             </Box>
             <Box sx={{ flex:1}}>
@@ -367,7 +374,7 @@ const Editor: React.FC<EditorProps> = ({ open, onClose, selectedDocument }) => {
                 multiline
                 rows={4}
                 value={formData.description_ar}
-                onChange={handleChange('description_ar')}
+                onChange={(e)=>handleChange('description_ar',e)}
               />
             </Box>
             </Box>

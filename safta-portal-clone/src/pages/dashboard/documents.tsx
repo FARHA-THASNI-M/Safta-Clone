@@ -80,7 +80,7 @@ const Documents: React.FC = () => {
 
   useEffect(() => {
     fetchDocuments();
-  }, [page, rowsPerPage, filters, searchQuery]);
+  }, [page, rowsPerPage, filters, searchQuery,isEditorOpen]);
 
   const fetchDocuments = async (): Promise<void> => {
     try {
