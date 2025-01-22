@@ -1,14 +1,33 @@
-import React, { useState, useEffect } from 'react';
-import { Box, Table, TableBody, TableCell, TableContainer, TableRow, TableHead, TableFooter, TablePagination, Paper, InputAdornment, IconButton, TextField, CircularProgress, Chip, Button, MenuItem } from '@mui/material';
-import SearchIcon from '@mui/icons-material/Search';
-import TuneIcon from '@mui/icons-material/Tune';
-import { Edit, Delete } from '@mui/icons-material';
-import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
-import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
-import { format } from 'date-fns';
-import axiosInstance from '../../api/axios';
-import TablePaginationActions from '../../components/Pagination';
-import Editor from '../../components/Editor';  
+import React, { useState, useEffect } from "react";
+import {
+  Box,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableRow,
+  TableHead,
+  TableFooter,
+  TablePagination,
+  Paper,
+  InputAdornment,
+  IconButton,
+  TextField,
+  CircularProgress,
+  Chip,
+  Button,
+  MenuItem,
+} from "@mui/material";
+import SearchIcon from "@mui/icons-material/Search";
+import TuneIcon from "@mui/icons-material/Tune";
+import { Edit, Delete } from "@mui/icons-material";
+import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
+import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
+import { format } from "date-fns";
+import axiosInstance from "../../api/axios";
+import TablePaginationActions from "../../components/Pagination";
+import Editor from "../../components/Editor";
+import { useGetDocumentsQuery } from "../../services/documents/documentService";
 
 interface RowData {
   id: number;
@@ -48,102 +67,117 @@ interface Filters {
 }
 
 const Documents: React.FC = () => {
-  const [page, setPage] = useState<number>(0);
+  const [page, setPage] = useState<number>(1);
   const [rowsPerPage, setRowsPerPage] = useState<number>(10);
   const [rows, setRows] = useState<RowData[]>([]);
   const [totalResults, setTotalResults] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<number | null>(null);
-  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [searchQuery, setSearchQuery] = useState<string>("");
   const [filters, setFilters] = useState<Filters>({
-    date: '',
-    workgroupId: '',
-    status: '',
+    date: "",
+    workgroupId: "",
+    status: "",
   });
   const [workgroups, setWorkgroups] = useState<Workgroup[]>([]);
-  const [isEditorOpen, setIsEditorOpen] = useState<boolean>(false);  
-  const [selectedDocument, setSelectedDocument] = useState<RowData | null>(null); 
+  const [isEditorOpen, setIsEditorOpen] = useState<boolean>(false);
+  const [selectedDocument, setSelectedDocument] = useState<RowData | null>(
+    null
+  );
 
   useEffect(() => {
     const fetchWorkgroups = async () => {
       try {
-        const response = await axiosInstance.get('https://dev-portal.safta.sa/api/v1/workgroups/list?lang=en');
+        const response = await axiosInstance.get(
+          "https://dev-portal.safta.sa/api/v1/workgroups/list?lang=en"
+        );
         setWorkgroups(response.data.data.workgroups);
       } catch (err) {
-        setError('Failed to fetch workgroups.');
-        console.error('Error fetching workgroups:', err);
+        setError("Failed to fetch workgroups.");
+        console.error("Error fetching workgroups:", err);
       }
     };
     fetchWorkgroups();
   }, []);
+  useEffect(() => {}, [page, rowsPerPage, filters, searchQuery, isEditorOpen]);
+  const { data: GetDocuments, isLoading } = useGetDocumentsQuery({
+    page: page + 1,
+    size: rowsPerPage,
+  });
 
-  useEffect(() => {
-    fetchDocuments();
-  }, [page, rowsPerPage, filters, searchQuery,isEditorOpen]);
+  console.log(GetDocuments?.data?.documents);
 
-  const fetchDocuments = async (): Promise<void> => {
-    try {
-      setLoading(true);
-      const queryParams: Record<string, string> = {
-        lang: 'en',
-        page: (page + 1).toString(),
-        size: rowsPerPage.toString(),
-      };
+  // useEffect(() => {
+  //   fetchDocuments();
+  // }, [page, rowsPerPage, filters, searchQuery,isEditorOpen]);
 
-      if (searchQuery) {
-        queryParams.q = searchQuery;
-      }
+  // const fetchDocuments = async (): Promise<void> => {
+  //   try {
+  //     setLoading(true);
+  //     const queryParams: Record<string, string> = {
+  //       lang: 'en',
+  //       page: (page + 1).toString(),
+  //       size: rowsPerPage.toString(),
+  //     };
 
-      if (filters.workgroupId) {
-        queryParams.workgroupId = filters.workgroupId;
-      }
+  //     if (searchQuery) {
+  //       queryParams.q = searchQuery;
+  //     }
 
-      if (filters.status) {
-        queryParams.status = filters.status;  
-      }
+  //     if (filters.workgroupId) {
+  //       queryParams.workgroupId = filters.workgroupId;
+  //     }
 
-      const response = await axiosInstance.get<PaginatedResponse>(
-        '/documents',
-        { params: queryParams }
-      );
+  //     if (filters.status) {
+  //       queryParams.status = filters.status;
+  //     }
 
-      const data = response.data.data;
-      setRows(data.documents);
-      setTotalResults(data.pagination.totalCount);
-      setError(null);
-    } catch (err) {
-      setError('Failed to fetch documents. Please try again later.');
-      console.error('Error fetching documents:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  //     const response = await axiosInstance.get<PaginatedResponse>(
+  //       '/documents',
+  //       { params: queryParams }
+  //     );
 
-  const handleDelete = async (id: number, workgroup_id: number): Promise<void> => {
-    if (!window.confirm('Are you sure you want to delete this document?')) {
+  //     const data = response.data.data;
+  //     setRows(data.documents);
+  //     setTotalResults(data.pagination.totalCount);
+  //     setError(null);
+  //   } catch (err) {
+  //     setError('Failed to fetch documents. Please try again later.');
+  //     console.error('Error fetching documents:', err);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+  const handleDelete = async (
+    id: number,
+    workgroup_id: number
+  ): Promise<void> => {
+    if (!window.confirm("Are you sure you want to delete this document?")) {
       return;
     }
     try {
       setDeleting(id);
-      await axiosInstance.delete(`/workgroups/${workgroup_id}/documents/${id}?lang=en`);
-      fetchDocuments();
+      await axiosInstance.delete(
+        `/workgroups/${workgroup_id}/documents/${id}?lang=en`
+      );
     } catch (err) {
-      setError('Failed to delete document');
-      console.error('Error deleting document:', err);
+      setError("Failed to delete document");
+      console.error("Error deleting document:", err);
     } finally {
       setDeleting(null);
     }
   };
 
   const handleEdit = (document: RowData) => {
-    setSelectedDocument(document);  
-    setIsEditorOpen(true);  
+    setSelectedDocument(document);
+    setIsEditorOpen(true);
   };
 
   const handleEditorClose = () => {
-    setIsEditorOpen(false);  
-    setSelectedDocument(null);  
+    setIsEditorOpen(false);
+    setSelectedDocument(null);
   };
 
   const handleChangePage = (
@@ -174,36 +208,61 @@ const Documents: React.FC = () => {
 
   const handleResetFilters = () => {
     setFilters({
-      date: '',
-      workgroupId: '',
-      status: '',
+      date: "",
+      workgroupId: "",
+      status: "",
     });
-    setSearchQuery('');
+    setSearchQuery("");
   };
 
-  if (loading) {
-    return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
-        <CircularProgress />
-      </Box>
-    );
-  }
+  // if (loading) {
+  //   return (
+  //     <Box
+  //       display="flex"
+  //       justifyContent="center"
+  //       alignItems="center"
+  //       minHeight="400px"
+  //     >
+  //       <CircularProgress color="secondary" />
+  //     </Box>
+  //   );
+  // }
 
-  if (error) {
-    return (
-      <Box p={3}>
-        <Box className="error-message">{error}</Box>
-      </Box>
-    );
-  }
+  // if (error) {
+  //   return (
+  //     <Box p={3}>
+  //       <Box className="error-message">{error}</Box>
+  //     </Box>
+  //   );
+  // }
+  // if (isLoading) {
+  //   return (
+  //     <Box
+  //       display="flex"
+  //       justifyContent="center"
+  //       alignItems="center"
+  //       minHeight="400px"
+  //     >
+  //       <CircularProgress />
+  //     </Box>
+  //   );
+  // }
+
+  // if (error) {
+  //   return (
+  //     <Box p={3}>
+  //       <Box className="error-message">{`Failed to fetch documents. Please try again later.`}</Box>
+  //     </Box>
+  //   );
+  // }
 
   return (
     <Box sx={{ p: 3 }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
-        <IconButton sx={{ color: 'black', padding: '7px' }}>
+      <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 3 }}>
+        <IconButton sx={{ color: "black", padding: "7px" }}>
           <TuneIcon />
         </IconButton>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
           <TextField
             type="date"
             size="small"
@@ -211,9 +270,9 @@ const Documents: React.FC = () => {
             onChange={handleFilterChange}
             name="date"
             sx={{
-              width: '150px',
-              '&:hover .MuiOutlinedInput-notchedOutline': {
-                borderColor: 'black',
+              width: "150px",
+              "&:hover .MuiOutlinedInput-notchedOutline": {
+                borderColor: "black",
               },
             }}
           />
@@ -226,12 +285,12 @@ const Documents: React.FC = () => {
             defaultValue=""
             label="Working Groups"
             sx={{
-              width: '150px',
-              '&:hover .MuiOutlinedInput-notchedOutline': {
-                borderColor: 'grey',
+              width: "150px",
+              "&:hover .MuiOutlinedInput-notchedOutline": {
+                borderColor: "grey",
               },
-              '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                borderColor: 'black', 
+              "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                borderColor: "black",
               },
             }}
           >
@@ -250,12 +309,12 @@ const Documents: React.FC = () => {
             defaultValue=""
             label="Status"
             sx={{
-              width: '150px',
-              '&:hover .MuiOutlinedInput-notchedOutline': {
-                borderColor: 'grey',
+              width: "150px",
+              "&:hover .MuiOutlinedInput-notchedOutline": {
+                borderColor: "grey",
               },
-              '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                borderColor: 'black', 
+              "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                borderColor: "black",
               },
             }}
           >
@@ -267,16 +326,16 @@ const Documents: React.FC = () => {
             variant="outlined"
             onClick={handleResetFilters}
             sx={{
-              backgroundColor: 'lightgrey',
+              backgroundColor: "lightgrey",
               color: "darkgray",
-              border: '1px solid #e0e0e0',
-              minWidth: '80px',
+              border: "1px solid #e0e0e0",
+              minWidth: "80px",
             }}
           >
             Reset
           </Button>
         </Box>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, ml: 'auto' }}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1, ml: "auto" }}>
           <TextField
             variant="outlined"
             placeholder="Search..."
@@ -284,10 +343,10 @@ const Documents: React.FC = () => {
             value={searchQuery}
             onChange={handleSearchChange}
             sx={{
-              width: '300px',
-              '& .MuiOutlinedInput-root': {
-                '&:hover fieldset': {
-                  borderColor: 'black',
+              width: "300px",
+              "& .MuiOutlinedInput-root": {
+                "&:hover fieldset": {
+                  borderColor: "black",
                 },
               },
             }}
@@ -301,7 +360,10 @@ const Documents: React.FC = () => {
           />
         </Box>
       </Box>
-      <TableContainer component={Paper} sx={{ boxShadow: 'none', border: '1px solid #e0e0e0' }}>
+      <TableContainer
+        component={Paper}
+        sx={{ boxShadow: "none", border: "1px solid #e0e0e0" }}
+      >
         <Table>
           <TableHead>
             <TableRow>
@@ -316,30 +378,48 @@ const Documents: React.FC = () => {
               <TableCell align="center">Action</TableCell>
             </TableRow>
           </TableHead>
-          <TableBody>
+          {/* <TableBody>
             {rows.map((row, index) => (
               <TableRow key={row.id}>
                 <TableCell>{index + 1 + page * rowsPerPage}</TableCell>
                 <TableCell>{row.title}</TableCell>
                 <TableCell>{row.workgroup_name}</TableCell>
-                <TableCell>{row.deliverable_name || '-'}</TableCell>
-                <TableCell>{format(new Date(row.created_at), 'dd MMM yyyy')}</TableCell>
+                <TableCell>{row.deliverable_name || "-"}</TableCell>
+                <TableCell>
+                  {format(new Date(row.created_at), "dd MMM yyyy")}
+                </TableCell>
                 <TableCell>{row.creator_name}</TableCell>
                 <TableCell>
                   <Chip
-                    label={row.status === 2 ? 'Approved' : row.status === 1 ? 'Pending' : 'Rejected'}
+                    label={
+                      row.status === 2
+                        ? "Approved"
+                        : row.status === 1
+                        ? "Pending"
+                        : "Rejected"
+                    }
                     size="small"
                     sx={{
-                      color: row.status === 2 ? 'green' : row.status === 1 ? '#ff5e00' : '#bf1000',
-                      backgroundColor: row.status === 2 ? '#ccffc9' : row.status === 1 ? '#ffe0a6' : '#fca69f',
+                      color:
+                        row.status === 2
+                          ? "green"
+                          : row.status === 1
+                          ? "#ff5e00"
+                          : "#bf1000",
+                      backgroundColor:
+                        row.status === 2
+                          ? "#ccffc9"
+                          : row.status === 1
+                          ? "#ffe0a6"
+                          : "#fca69f",
                     }}
                   />
                 </TableCell>
                 <TableCell>
                   {row.public_at === null ? (
-                    <CancelOutlinedIcon sx={{ color: 'red' }} />
+                    <CancelOutlinedIcon sx={{ color: "red" }} />
                   ) : (
-                    <CheckCircleOutlineIcon sx={{ color: 'green' }} />
+                    <CheckCircleOutlineIcon sx={{ color: "green" }} />
                   )}
                 </TableCell>
                 <TableCell align="center">
@@ -360,12 +440,68 @@ const Documents: React.FC = () => {
                 </TableCell>
               </TableRow>
             ))}
+          </TableBody> */}
+          <TableBody>
+            {GetDocuments?.data?.documents.map((row, index) => (
+              <TableRow key={row.id}>
+                <TableCell>{index + 1 + page * rowsPerPage}</TableCell>
+                <TableCell>{row.title}</TableCell>
+                <TableCell>{row.workgroup_name}</TableCell>
+                <TableCell>{row.deliverable_name || "-"}</TableCell>
+                <TableCell>
+                  {format(new Date(row.created_at), "dd MMM yyyy")}
+                </TableCell>
+                <TableCell>{row.creator_name}</TableCell>
+                <TableCell>
+                  <Chip
+                    label={
+                      row.status === "2"
+                        ? "Approved"
+                        : row.status === "1"
+                        ? "Pending"
+                        : "Rejected"
+                    }
+                    size="small"
+                    sx={{
+                      color:
+                        row.status === "2"
+                          ? "green"
+                          : row.status === "1"
+                          ? "#ff5e00"
+                          : "#bf1000",
+                      backgroundColor:
+                        row.status === "2"
+                          ? "#ccffc9"
+                          : row.status === "1"
+                          ? "#ffe0a6"
+                          : "#fca69f",
+                    }}
+                  />
+                </TableCell>
+                <TableCell>
+                  {row.public_at === null ? (
+                    <CancelOutlinedIcon sx={{ color: "red" }} />
+                  ) : (
+                    <CheckCircleOutlineIcon sx={{ color: "green" }} />
+                  )}
+                </TableCell>
+                <TableCell align="center">
+                  <IconButton size="small">
+                    <Edit />
+                  </IconButton>
+                  <IconButton size="small">
+                    <Delete />
+                  </IconButton>
+                </TableCell>
+              </TableRow>
+            ))}
           </TableBody>
+
           <TableFooter>
             <TableRow>
-              <TablePagination
+              {/* <TablePagination
                 colSpan={9}
-                count={totalResults}
+                count={data?.data?.pagination?.totalCount || 0}
                 rowsPerPage={rowsPerPage}
                 page={page}
                 onPageChange={handleChangePage}
@@ -374,37 +510,17 @@ const Documents: React.FC = () => {
                 rowsPerPageOptions={[10, 20, 30]}
                 labelRowsPerPage=""
                 labelDisplayedRows={({ count }) => `${count} results`}
-                sx={{
-                  borderBottom: 'none',
-                  '& .MuiTablePagination-toolbar': {
-                    paddingLeft: 0,
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    width: '100%',
-                  },
-                  '& .MuiTablePagination-displayedRows': {
-                    color: '#666',
-                    marginLeft: '8px',
-                  },
-                  '& .MuiTablePagination-selectLabel': {
-                    display: 'none',
-                  },
-                  '& .MuiSelect-select': {
-                    paddingTop: '4px',
-                    paddingBottom: '4px',
-                  },
-                }}
-              />
+              /> */}
             </TableRow>
           </TableFooter>
         </Table>
       </TableContainer>
 
-      <Editor
+      {/* <Editor
         open={isEditorOpen}
         onClose={handleEditorClose}
         selectedDocument={selectedDocument}
-      />
+      /> */}
     </Box>
   );
 };
