@@ -18,7 +18,7 @@ const authService = rootApi.injectEndpoints({
       query: (email) => ({
         url: "/auth/password-reset/request?lang=en",
         method: "POST",
-        body: { email },
+        body:  email ,
       }),
     }),
   }),

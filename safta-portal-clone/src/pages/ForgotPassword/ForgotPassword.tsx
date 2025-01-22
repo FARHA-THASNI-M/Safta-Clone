@@ -6,43 +6,44 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import axios from "axios";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-
+import { useForgotPasswordMutation } from "../../services/auth/authService";
 export const ForgotPassword: React.FC = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
   const [resetSuccess, setResetSuccess] = useState(false);
-
-  // Toast configuration
-  const notifySuccess = (message: string) => {
-    toast.success(message, {
-      position: "top-right",
-      autoClose: 5000,
-      hideProgressBar: true,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-      progress: undefined,
-    });
-  };
+  const [forgotPassword] = useForgotPasswordMutation();
 
   const handleForgotPassword = async () => {
+    setError("");
+    if (!email) {
+      setError("Email is required");
+      return;
+    }
+
     try {
-      const response = await axios.post(
-        "https://dev-portal.safta.sa/api/v1/auth/password-reset/request?lang=en",
-        { email }
-      );
-      const message = response.data.message;
-      notifySuccess(message);
+      //   const response = await axios.post(
+      //     "https://dev-portal.safta.sa/api/v1/auth/password-reset/request?lang=en",
+      //     { email }
+      //   );
+      //   const message = response.data.message;
+      //   toast.success(message);
+      //   setResetSuccess(true);
+      // } catch (error) {
+      //   console.error(error);
+      //   setError("Failed to process password reset request");
+      //   toast.error("An error occurred while processing your request");
+      // }
+      const response = await forgotPassword({ email }).unwrap();
+      toast.success(response.message);
       setResetSuccess(true);
     } catch (error) {
-      console.error(error);
-      setError("Failed to process password reset request");
+      // console.error(error);
+      // setError("Failed to process password reset request");
+      // toast.error("An error occurred while processing your request");
     }
   };
 
@@ -78,6 +79,8 @@ export const ForgotPassword: React.FC = () => {
           margin="normal"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          error={!!error}
+          helperText={error}
           sx={{
             "& .MuiOutlinedInput-root": {
               borderRadius: "14px",
@@ -88,11 +91,7 @@ export const ForgotPassword: React.FC = () => {
           Enter the email address associated with your account and we'll send
           you a link to reset your password
         </Typography>
-        {error && (
-          <Typography color="error" variant="body2" sx={{ mt: 1 }}>
-            {error}
-          </Typography>
-        )}
+
         <Button
           fullWidth
           variant="contained"
