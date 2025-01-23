@@ -13,7 +13,6 @@ import {
   InputAdornment,
   IconButton,
   TextField,
-  CircularProgress,
   Chip,
   Button,
   MenuItem,
@@ -29,7 +28,7 @@ import TablePaginationActions from "../../components/Pagination";
 import Editor from "../../components/Editor";
 import { useGetDocumentsQuery } from "../../services/documents/documentService";
 import { useSearchParams } from "react-router-dom";
-
+import { useGetWorkgroupsQuery } from "../../services/working groups/workinggroupService";
 interface RowData {
   id: number;
   workgroup_id: number;
@@ -70,7 +69,6 @@ interface Filters {
 const Documents: React.FC = () => {
   const [page, setPage] = useState<number>(1);
   const [rowsPerPage, setRowsPerPage] = useState<number>(10);
-  const [rows, setRows] = useState<RowData[]>([]);
   const [totalResults, setTotalResults] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -81,27 +79,29 @@ const Documents: React.FC = () => {
     workgroupId: "",
     status: "",
   });
-  const [workgroups, setWorkgroups] = useState<Workgroup[]>([]);
   const [isEditorOpen, setIsEditorOpen] = useState<boolean>(false);
   const [selectedDocument, setSelectedDocument] = useState<RowData | null>(
     null
   );
   const [searchParams, setSearchParams] = useSearchParams();
+  const {
+    data: workgroupData,
+    error: workgroupError,
+    isLoading: isWorkgroupsLoading,
+  } = useGetWorkgroupsQuery();
 
   useEffect(() => {
-    const fetchWorkgroups = async () => {
-      try {
-        const response = await axiosInstance.get(
-          "https://dev-portal.safta.sa/api/v1/workgroups/list?lang=en"
-        );
-        setWorkgroups(response.data.data.workgroups);
-      } catch (err) {
-        setError("Failed to fetch workgroups.");
-        console.error("Error fetching workgroups:", err);
-      }
-    };
-    fetchWorkgroups();
-  }, []);
+    if (workgroupError) {
+      setError("Failed to fetch workgroups.");
+      console.error("Error fetching workgroups:", workgroupError);
+    }
+  }, [workgroupError]);
+  const [workgroups, setWorkgroups] = useState<Workgroup[]>([]);
+  useEffect(() => {
+    if (workgroupData) {
+      setWorkgroups(workgroupData.data.workgroups);
+    }
+  }, [workgroupData]);
 
   useEffect(() => {
     const filterObj: Filters = {
