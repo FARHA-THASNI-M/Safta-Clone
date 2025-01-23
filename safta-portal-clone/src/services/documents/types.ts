@@ -35,6 +35,6 @@ export type DocumentsResponse = APIResponse<{
 }>;
 
 export type DocumentParams = {
-  workgroup_id?: number;
+  workgroup?: number;
   document_id?: number;
 };

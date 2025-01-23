@@ -28,6 +28,7 @@ import axiosInstance from "../../api/axios";
 import TablePaginationActions from "../../components/Pagination";
 import Editor from "../../components/Editor";
 import { useGetDocumentsQuery } from "../../services/documents/documentService";
+import { useSearchParams } from "react-router-dom";
 
 interface RowData {
   id: number;
@@ -85,6 +86,7 @@ const Documents: React.FC = () => {
   const [selectedDocument, setSelectedDocument] = useState<RowData | null>(
     null
   );
+  const [searchParams, setSearchParams] = useSearchParams();
 
   useEffect(() => {
     const fetchWorkgroups = async () => {
@@ -100,55 +102,24 @@ const Documents: React.FC = () => {
     };
     fetchWorkgroups();
   }, []);
+
+  useEffect(() => {
+    const filterObj: Filters = {
+      date: searchParams.get("uploaded_at") || "",
+      workgroupId: searchParams.get("working_group") || "",
+      status: searchParams.get("status") || "",
+    };
+    setFilters(filterObj);
+  }, [searchParams]);
+
   useEffect(() => {}, [page, rowsPerPage, filters, searchQuery, isEditorOpen]);
   const { data: GetDocuments, isLoading } = useGetDocumentsQuery({
-    page: page + 1,
+    page: page,
     size: rowsPerPage,
+    workgroupId: filters.workgroupId || undefined,
+    status: filters.status || undefined,
+    uploaded_at: filters.date || undefined,
   });
-
-  console.log(GetDocuments?.data?.documents);
-
-  // useEffect(() => {
-  //   fetchDocuments();
-  // }, [page, rowsPerPage, filters, searchQuery,isEditorOpen]);
-
-  // const fetchDocuments = async (): Promise<void> => {
-  //   try {
-  //     setLoading(true);
-  //     const queryParams: Record<string, string> = {
-  //       lang: 'en',
-  //       page: (page + 1).toString(),
-  //       size: rowsPerPage.toString(),
-  //     };
-
-  //     if (searchQuery) {
-  //       queryParams.q = searchQuery;
-  //     }
-
-  //     if (filters.workgroupId) {
-  //       queryParams.workgroupId = filters.workgroupId;
-  //     }
-
-  //     if (filters.status) {
-  //       queryParams.status = filters.status;
-  //     }
-
-  //     const response = await axiosInstance.get<PaginatedResponse>(
-  //       '/documents',
-  //       { params: queryParams }
-  //     );
-
-  //     const data = response.data.data;
-  //     setRows(data.documents);
-  //     setTotalResults(data.pagination.totalCount);
-  //     setError(null);
-  //   } catch (err) {
-  //     setError('Failed to fetch documents. Please try again later.');
-  //     console.error('Error fetching documents:', err);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
 
   const handleDelete = async (
     id: number,
@@ -180,30 +151,21 @@ const Documents: React.FC = () => {
     setSelectedDocument(null);
   };
 
-  const handleChangePage = (
-    event: React.MouseEvent<HTMLButtonElement> | null,
-    newPage: number
-  ): void => {
-    setPage(newPage);
-  };
-
-  const handleChangeRowsPerPage = (
-    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ): void => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
-  };
-
-  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(event.target.value);
-  };
-
   const handleFilterChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
-    setFilters((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFilters((prev) => {
+      const newFilters = { ...prev, [name]: value };
+      const updatedSearchParams = new URLSearchParams();
+
+      if (newFilters.workgroupId)
+        updatedSearchParams.set("working_group", newFilters.workgroupId);
+      if (newFilters.status)
+        updatedSearchParams.set("status", newFilters.status);
+      if (newFilters.date)
+        updatedSearchParams.set("uploaded_at", newFilters.date);
+      setSearchParams(updatedSearchParams);
+      return newFilters;
+    });
   };
 
   const handleResetFilters = () => {
@@ -212,49 +174,8 @@ const Documents: React.FC = () => {
       workgroupId: "",
       status: "",
     });
-    setSearchQuery("");
+    setSearchParams({});
   };
-
-  // if (loading) {
-  //   return (
-  //     <Box
-  //       display="flex"
-  //       justifyContent="center"
-  //       alignItems="center"
-  //       minHeight="400px"
-  //     >
-  //       <CircularProgress color="secondary" />
-  //     </Box>
-  //   );
-  // }
-
-  // if (error) {
-  //   return (
-  //     <Box p={3}>
-  //       <Box className="error-message">{error}</Box>
-  //     </Box>
-  //   );
-  // }
-  // if (isLoading) {
-  //   return (
-  //     <Box
-  //       display="flex"
-  //       justifyContent="center"
-  //       alignItems="center"
-  //       minHeight="400px"
-  //     >
-  //       <CircularProgress />
-  //     </Box>
-  //   );
-  // }
-
-  // if (error) {
-  //   return (
-  //     <Box p={3}>
-  //       <Box className="error-message">{`Failed to fetch documents. Please try again later.`}</Box>
-  //     </Box>
-  //   );
-  // }
 
   return (
     <Box sx={{ p: 3 }}>
@@ -336,7 +257,7 @@ const Documents: React.FC = () => {
           </Button>
         </Box>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1, ml: "auto" }}>
-          <TextField
+          {/* <TextField
             variant="outlined"
             placeholder="Search..."
             size="small"
@@ -357,7 +278,7 @@ const Documents: React.FC = () => {
                 </InputAdornment>
               ),
             }}
-          />
+          /> */}
         </Box>
       </Box>
       <TableContainer
@@ -378,69 +299,6 @@ const Documents: React.FC = () => {
               <TableCell align="center">Action</TableCell>
             </TableRow>
           </TableHead>
-          {/* <TableBody>
-            {rows.map((row, index) => (
-              <TableRow key={row.id}>
-                <TableCell>{index + 1 + page * rowsPerPage}</TableCell>
-                <TableCell>{row.title}</TableCell>
-                <TableCell>{row.workgroup_name}</TableCell>
-                <TableCell>{row.deliverable_name || "-"}</TableCell>
-                <TableCell>
-                  {format(new Date(row.created_at), "dd MMM yyyy")}
-                </TableCell>
-                <TableCell>{row.creator_name}</TableCell>
-                <TableCell>
-                  <Chip
-                    label={
-                      row.status === 2
-                        ? "Approved"
-                        : row.status === 1
-                        ? "Pending"
-                        : "Rejected"
-                    }
-                    size="small"
-                    sx={{
-                      color:
-                        row.status === 2
-                          ? "green"
-                          : row.status === 1
-                          ? "#ff5e00"
-                          : "#bf1000",
-                      backgroundColor:
-                        row.status === 2
-                          ? "#ccffc9"
-                          : row.status === 1
-                          ? "#ffe0a6"
-                          : "#fca69f",
-                    }}
-                  />
-                </TableCell>
-                <TableCell>
-                  {row.public_at === null ? (
-                    <CancelOutlinedIcon sx={{ color: "red" }} />
-                  ) : (
-                    <CheckCircleOutlineIcon sx={{ color: "green" }} />
-                  )}
-                </TableCell>
-                <TableCell align="center">
-                  <IconButton size="small" onClick={() => handleEdit(row)}>
-                    <Edit />
-                  </IconButton>
-                  <IconButton
-                    size="small"
-                    onClick={() => handleDelete(row.id, row.workgroup_id)}
-                    disabled={deleting === row.id}
-                  >
-                    {deleting === row.id ? (
-                      <CircularProgress size={20} />
-                    ) : (
-                      <Delete />
-                    )}
-                  </IconButton>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody> */}
           <TableBody>
             {GetDocuments?.data?.documents.map((row, index) => (
               <TableRow key={row.id}>
