@@ -116,7 +116,7 @@ const Documents: React.FC = () => {
   const { data: GetDocuments, isLoading } = useGetDocumentsQuery({
     page: page,
     size: rowsPerPage,
-    workgroupId: filters.workgroupId || undefined,
+    workgroup: filters.workgroupId || undefined,
     status: filters.status || undefined,
     uploaded_at: filters.date || undefined,
   });
@@ -257,12 +257,11 @@ const Documents: React.FC = () => {
           </Button>
         </Box>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1, ml: "auto" }}>
-          {/* <TextField
+          <TextField
             variant="outlined"
             placeholder="Search..."
             size="small"
             value={searchQuery}
-            onChange={handleSearchChange}
             sx={{
               width: "300px",
               "& .MuiOutlinedInput-root": {
@@ -278,7 +277,7 @@ const Documents: React.FC = () => {
                 </InputAdornment>
               ),
             }}
-          /> */}
+          />
         </Box>
       </Box>
       <TableContainer
@@ -373,8 +372,8 @@ const Documents: React.FC = () => {
           </TableFooter>
         </Table>
       </TableContainer>
-
-      {/* <Editor
+      {/* 
+      <Editor
         open={isEditorOpen}
         onClose={handleEditorClose}
         selectedDocument={selectedDocument}
