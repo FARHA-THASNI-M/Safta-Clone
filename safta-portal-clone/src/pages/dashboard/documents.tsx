@@ -17,16 +17,19 @@ import {
   Button,
   MenuItem,
 } from "@mui/material";
+import { toast } from "react-toastify";
 import SearchIcon from "@mui/icons-material/Search";
 import TuneIcon from "@mui/icons-material/Tune";
 import { Edit, Delete } from "@mui/icons-material";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
 import { format } from "date-fns";
-import axiosInstance from "../../api/axios";
 import TablePaginationActions from "../../components/Pagination";
 import Editor from "../../components/Editor";
-import { useGetDocumentsQuery } from "../../services/documents/documentService";
+import {
+  useGetDocumentsQuery,
+  useDeleteDocumentMutation,
+} from "../../services/documents/documentService";
 import { useSearchParams } from "react-router-dom";
 import { useGetWorkgroupsQuery } from "../../services/working groups/workinggroupService";
 interface RowData {
@@ -69,20 +72,18 @@ interface Filters {
 const Documents: React.FC = () => {
   const [page, setPage] = useState<number>(1);
   const [rowsPerPage, setRowsPerPage] = useState<number>(10);
-  const [totalResults, setTotalResults] = useState<number>(0);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<number | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [selectedDocument, setSelectedDocument] = useState<RowData | null>(
+    null
+  );
   const [filters, setFilters] = useState<Filters>({
     date: "",
     workgroupId: "",
     status: "",
   });
   const [isEditorOpen, setIsEditorOpen] = useState<boolean>(false);
-  const [selectedDocument, setSelectedDocument] = useState<RowData | null>(
-    null
-  );
   const [searchParams, setSearchParams] = useSearchParams();
   const {
     data: workgroupData,
@@ -113,13 +114,14 @@ const Documents: React.FC = () => {
   }, [searchParams]);
 
   useEffect(() => {}, [page, rowsPerPage, filters, searchQuery, isEditorOpen]);
-  const { data: GetDocuments, isLoading } = useGetDocumentsQuery({
+  const { data: GetDocuments, refetch } = useGetDocumentsQuery({
     page: page,
     size: rowsPerPage,
     workgroup: filters.workgroupId || undefined,
     status: filters.status || undefined,
     uploaded_at: filters.date || undefined,
   });
+  const [deleteDocument, {}] = useDeleteDocumentMutation();
 
   const handleDelete = async (
     id: number,
@@ -128,14 +130,15 @@ const Documents: React.FC = () => {
     if (!window.confirm("Are you sure you want to delete this document?")) {
       return;
     }
+
     try {
       setDeleting(id);
-      await axiosInstance.delete(
-        `/workgroups/${workgroup_id}/documents/${id}?lang=en`
-      );
+      await deleteDocument({ id, workgroup_id }).unwrap();
+      toast.success("Document deleted successfully!");
+      await refetch();
     } catch (err) {
-      setError("Failed to delete document");
       console.error("Error deleting document:", err);
+      toast.error("Failed to delete document.");
     } finally {
       setDeleting(null);
     }
@@ -346,7 +349,10 @@ const Documents: React.FC = () => {
                   <IconButton size="small">
                     <Edit />
                   </IconButton>
-                  <IconButton size="small">
+                  <IconButton
+                    size="small"
+                    onClick={() => handleDelete(row.id, row.workgroup_id)}
+                  >
                     <Delete />
                   </IconButton>
                 </TableCell>
@@ -372,12 +378,12 @@ const Documents: React.FC = () => {
           </TableFooter>
         </Table>
       </TableContainer>
-      {/* 
+
       <Editor
         open={isEditorOpen}
         onClose={handleEditorClose}
         selectedDocument={selectedDocument}
-      /> */}
+      />
     </Box>
   );
 };

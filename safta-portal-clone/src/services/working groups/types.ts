@@ -1,14 +1,14 @@
-export interface Workgroup {
+export type Workgroup = {
   id: string;
   name: string;
-}
+};
 
-export interface WorkgroupsResponse {
+export type WorkgroupsResponse = {
   data: {
     workgroups: Workgroup[];
   };
-}
+};
 
-export interface WorkgroupParams {
+export type WorkgroupParams = {
   lang?: string;
-}
+};

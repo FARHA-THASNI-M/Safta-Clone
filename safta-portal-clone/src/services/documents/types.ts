@@ -40,3 +40,8 @@ export type DocumentParams = {
   status?: string;
   uploaded_at?: string;
 };
+
+export type DeleteParams = {
+  id: number;
+  workgroup_id: number;
+};
