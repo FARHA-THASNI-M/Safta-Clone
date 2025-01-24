@@ -8,11 +8,20 @@ const documentService = rootApi.injectEndpoints({
       DocumentsResponse,
       PaginationParams & DocumentParams
     >({
-      query: (params) => ({
-        url: "/documents?lang=en",
-        params,
-      }),
+      query: ({ page, size, workgroup, status, uploaded_at }) => {
+        // Construct the query string dynamically based on the parameters passed
+        let queryParams = `?lang=en&page=${page || 1}&size=${size || 10}`;
+
+        if (workgroup) queryParams += `&workgroup=${workgroup}`;
+        if (status) queryParams += `&status=${status}`;
+        if (uploaded_at) queryParams += `&uploaded_at=${uploaded_at}`;
+
+        return {
+          url: `/documents${queryParams}`,
+        };
+      },
     }),
+
     deleteDocument: build.mutation<void, DeleteParams>({
       query: ({ id, workgroup_id }) => ({
         url: `/workgroups/${workgroup_id}/documents/${id}?lang=en`,

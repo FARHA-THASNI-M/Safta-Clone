@@ -32,42 +32,43 @@ import {
 } from "../../services/documents/documentService";
 import { useSearchParams } from "react-router-dom";
 import { useGetWorkgroupsQuery } from "../../services/working groups/workinggroupService";
-interface RowData {
-  id: number;
-  workgroup_id: number;
-  title: string;
-  workgroup_name: string;
-  deliverable_name: string | null;
-  created_at: string;
-  creator_name: string;
-  status: number;
-  public_at: string | null;
-}
+import { DocumentParams } from "../../services/documents/types";
+// interface RowData {
+//   id: number;
+//   workgroup_id: number;
+//   title: string;
+//   workgroup_name: string;
+//   deliverable_name: string | null;
+//   created_at: string;
+//   creator_name: string;
+//   status: string;
+//   public_at: string | null;
+// }
 
-interface Pagination {
-  currentPage: number;
-  perPage: number;
-  totalCount: number;
-  totalPages: number;
-}
+// interface Pagination {
+//   currentPage: number;
+//   perPage: number;
+//   totalCount: number;
+//   totalPages: number;
+// }
 
-interface PaginatedResponse {
-  data: {
-    documents: RowData[];
-    pagination: Pagination;
-  };
-}
+// interface PaginatedResponse {
+//   data: {
+//     documents: RowData[];
+//     pagination: Pagination;
+//   };
+// }
 
-interface Workgroup {
-  id: string;
-  name: string;
-}
+// interface Workgroup {
+//   id: string;
+//   name: string;
+// }
 
-interface Filters {
-  date: string;
-  workgroupId: string;
-  status: string;
-}
+// interface Filters {
+//   date: string;
+//   workgroupId: string;
+//   status: string;
+// }
 
 const Documents: React.FC = () => {
   const [page, setPage] = useState<number>(1);
@@ -75,12 +76,12 @@ const Documents: React.FC = () => {
   const [deleting, setDeleting] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const [selectedDocument, setSelectedDocument] = useState<RowData | null>(
+  const [selectedDocument, setSelectedDocument] = useState<Document | null>(
     null
   );
-  const [filters, setFilters] = useState<Filters>({
-    date: "",
-    workgroupId: "",
+  const [filters, setFilters] = useState<DocumentParams>({
+    uploaded_at: "",
+    workgroup: "",
     status: "",
   });
   const [isEditorOpen, setIsEditorOpen] = useState<boolean>(false);
@@ -97,7 +98,10 @@ const Documents: React.FC = () => {
       console.error("Error fetching workgroups:", workgroupError);
     }
   }, [workgroupError]);
-  const [workgroups, setWorkgroups] = useState<Workgroup[]>([]);
+  const [workgroups, setWorkgroups] = useState<{ id: string; name: string }[]>(
+    []
+  );
+
   useEffect(() => {
     if (workgroupData) {
       setWorkgroups(workgroupData.data.workgroups);
@@ -105,23 +109,21 @@ const Documents: React.FC = () => {
   }, [workgroupData]);
 
   useEffect(() => {
-    const filterObj: Filters = {
-      date: searchParams.get("uploaded_at") || "",
-      workgroupId: searchParams.get("working_group") || "",
+    const filterObj: DocumentParams = {
+      uploaded_at: searchParams.get("uploaded_at") || "",
+      workgroup: searchParams.get("working_group") || "",
       status: searchParams.get("status") || "",
     };
     setFilters(filterObj);
   }, [searchParams]);
 
-  useEffect(() => {}, [page, rowsPerPage, filters, searchQuery, isEditorOpen]);
   const { data: GetDocuments, refetch } = useGetDocumentsQuery({
+    ...filters,
     page: page,
     size: rowsPerPage,
-    workgroup: filters.workgroupId || undefined,
-    status: filters.status || undefined,
-    uploaded_at: filters.date || undefined,
   });
-  const [deleteDocument, {}] = useDeleteDocumentMutation();
+
+  const [deleteDocument] = useDeleteDocumentMutation();
 
   const handleDelete = async (
     id: number,
@@ -144,7 +146,16 @@ const Documents: React.FC = () => {
     }
   };
 
-  const handleEdit = (document: RowData) => {
+  // useEffect(() => {}, [page, rowsPerPage, filters, searchQuery, isEditorOpen]);
+  // const { data: GetDocuments, refetch } = useGetDocumentsQuery({
+  //   page: page,
+  //   size: rowsPerPage,
+  //   workgroup: filters.workgroupId || undefined,
+  //   status: filters.status || undefined,
+  //   uploaded_at: filters.date || undefined,
+  // });
+
+  const handleEdit = (document: Document) => {
     setSelectedDocument(document);
     setIsEditorOpen(true);
   };
@@ -160,12 +171,12 @@ const Documents: React.FC = () => {
       const newFilters = { ...prev, [name]: value };
       const updatedSearchParams = new URLSearchParams();
 
-      if (newFilters.workgroupId)
-        updatedSearchParams.set("working_group", newFilters.workgroupId);
+      if (newFilters.workgroup)
+        updatedSearchParams.set("working_group", newFilters.workgroup);
       if (newFilters.status)
         updatedSearchParams.set("status", newFilters.status);
-      if (newFilters.date)
-        updatedSearchParams.set("uploaded_at", newFilters.date);
+      if (newFilters.uploaded_at)
+        updatedSearchParams.set("uploaded_at", newFilters.uploaded_at);
       setSearchParams(updatedSearchParams);
       return newFilters;
     });
@@ -173,11 +184,24 @@ const Documents: React.FC = () => {
 
   const handleResetFilters = () => {
     setFilters({
-      date: "",
-      workgroupId: "",
+      uploaded_at: "",
+      workgroup: "",
       status: "",
     });
     setSearchParams({});
+  };
+  const handleChangePage = (
+    event: React.MouseEvent<HTMLButtonElement> | null,
+    newPage: number
+  ) => {
+    setPage(newPage + 1);
+  };
+
+  const handleChangeRowsPerPage = (
+    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(1);
   };
 
   return (
@@ -190,9 +214,9 @@ const Documents: React.FC = () => {
           <TextField
             type="date"
             size="small"
-            value={filters.date}
+            value={filters.uploaded_at}
             onChange={handleFilterChange}
-            name="date"
+            name="upload_at"
             sx={{
               width: "150px",
               "&:hover .MuiOutlinedInput-notchedOutline": {
@@ -203,9 +227,9 @@ const Documents: React.FC = () => {
           <TextField
             select
             size="small"
-            value={filters.workgroupId}
+            value={filters.workgroup}
             onChange={handleFilterChange}
-            name="workgroupId"
+            name="workgroup"
             defaultValue=""
             label="Working Groups"
             sx={{
@@ -346,7 +370,7 @@ const Documents: React.FC = () => {
                   )}
                 </TableCell>
                 <TableCell align="center">
-                  <IconButton size="small">
+                  <IconButton size="small" onClick={() => handleEdit(row)}>
                     <Edit />
                   </IconButton>
                   <IconButton
@@ -362,23 +386,20 @@ const Documents: React.FC = () => {
 
           <TableFooter>
             <TableRow>
-              {/* <TablePagination
-                colSpan={9}
-                count={data?.data?.pagination?.totalCount || 0}
+              <TablePagination
+                count={GetDocuments?.data?.pagination?.totalCount || 0}
                 rowsPerPage={rowsPerPage}
-                page={page}
+                page={page - 1}
                 onPageChange={handleChangePage}
                 onRowsPerPageChange={handleChangeRowsPerPage}
-                ActionsComponent={TablePaginationActions}
                 rowsPerPageOptions={[10, 20, 30]}
                 labelRowsPerPage=""
                 labelDisplayedRows={({ count }) => `${count} results`}
-              /> */}
+              />
             </TableRow>
           </TableFooter>
         </Table>
       </TableContainer>
-
       <Editor
         open={isEditorOpen}
         onClose={handleEditorClose}
