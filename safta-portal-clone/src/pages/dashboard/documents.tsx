@@ -286,7 +286,7 @@ const Documents: React.FC = () => {
                 console.log("Row status:", row.status),
                 (
                   <TableRow key={row.id}>
-                    <TableCell>{index + 1 + page * rowsPerPage}</TableCell>
+                    <TableCell>{index + 1}</TableCell>
                     <TableCell>{row.title}</TableCell>
                     <TableCell>{row.workgroup_name}</TableCell>
                     <TableCell>{row.deliverable_name || "-"}</TableCell>
