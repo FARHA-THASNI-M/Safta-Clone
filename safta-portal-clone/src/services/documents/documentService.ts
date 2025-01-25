@@ -9,7 +9,6 @@ const documentService = rootApi.injectEndpoints({
       PaginationParams & DocumentParams
     >({
       query: ({ page, size, workgroup, status, uploaded_at }) => {
-        // Construct the query string dynamically based on the parameters passed
         let queryParams = `?lang=en&page=${page || 1}&size=${size || 10}`;
 
         if (workgroup) queryParams += `&workgroup=${workgroup}`;

@@ -33,42 +33,6 @@ import {
 import { useSearchParams } from "react-router-dom";
 import { useGetWorkgroupsQuery } from "../../services/working groups/workinggroupService";
 import { DocumentParams } from "../../services/documents/types";
-// interface RowData {
-//   id: number;
-//   workgroup_id: number;
-//   title: string;
-//   workgroup_name: string;
-//   deliverable_name: string | null;
-//   created_at: string;
-//   creator_name: string;
-//   status: string;
-//   public_at: string | null;
-// }
-
-// interface Pagination {
-//   currentPage: number;
-//   perPage: number;
-//   totalCount: number;
-//   totalPages: number;
-// }
-
-// interface PaginatedResponse {
-//   data: {
-//     documents: RowData[];
-//     pagination: Pagination;
-//   };
-// }
-
-// interface Workgroup {
-//   id: string;
-//   name: string;
-// }
-
-// interface Filters {
-//   date: string;
-//   workgroupId: string;
-//   status: string;
-// }
 
 const Documents: React.FC = () => {
   const [page, setPage] = useState<number>(1);
@@ -145,15 +109,6 @@ const Documents: React.FC = () => {
       setDeleting(null);
     }
   };
-
-  // useEffect(() => {}, [page, rowsPerPage, filters, searchQuery, isEditorOpen]);
-  // const { data: GetDocuments, refetch } = useGetDocumentsQuery({
-  //   page: page,
-  //   size: rowsPerPage,
-  //   workgroup: filters.workgroupId || undefined,
-  //   status: filters.status || undefined,
-  //   uploaded_at: filters.date || undefined,
-  // });
 
   const handleEdit = (document: Document) => {
     setSelectedDocument(document);
@@ -326,62 +281,73 @@ const Documents: React.FC = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {GetDocuments?.data?.documents.map((row, index) => (
-              <TableRow key={row.id}>
-                <TableCell>{index + 1 + page * rowsPerPage}</TableCell>
-                <TableCell>{row.title}</TableCell>
-                <TableCell>{row.workgroup_name}</TableCell>
-                <TableCell>{row.deliverable_name || "-"}</TableCell>
-                <TableCell>
-                  {format(new Date(row.created_at), "dd MMM yyyy")}
-                </TableCell>
-                <TableCell>{row.creator_name}</TableCell>
-                <TableCell>
-                  <Chip
-                    label={
-                      row.status === "2"
-                        ? "Approved"
-                        : row.status === "1"
-                        ? "Pending"
-                        : "Rejected"
-                    }
-                    size="small"
-                    sx={{
-                      color:
-                        row.status === "2"
-                          ? "green"
-                          : row.status === "1"
-                          ? "#ff5e00"
-                          : "#bf1000",
-                      backgroundColor:
-                        row.status === "2"
-                          ? "#ccffc9"
-                          : row.status === "1"
-                          ? "#ffe0a6"
-                          : "#fca69f",
-                    }}
-                  />
-                </TableCell>
-                <TableCell>
-                  {row.public_at === null ? (
-                    <CancelOutlinedIcon sx={{ color: "red" }} />
-                  ) : (
-                    <CheckCircleOutlineIcon sx={{ color: "green" }} />
-                  )}
-                </TableCell>
-                <TableCell align="center">
-                  <IconButton size="small" onClick={() => handleEdit(row)}>
-                    <Edit />
-                  </IconButton>
-                  <IconButton
-                    size="small"
-                    onClick={() => handleDelete(row.id, row.workgroup_id)}
-                  >
-                    <Delete />
-                  </IconButton>
-                </TableCell>
-              </TableRow>
-            ))}
+            {GetDocuments?.data?.documents.map(
+              (row, index) => (
+                console.log("Row status:", row.status),
+                (
+                  <TableRow key={row.id}>
+                    <TableCell>{index + 1 + page * rowsPerPage}</TableCell>
+                    <TableCell>{row.title}</TableCell>
+                    <TableCell>{row.workgroup_name}</TableCell>
+                    <TableCell>{row.deliverable_name || "-"}</TableCell>
+                    <TableCell>
+                      {format(new Date(row.created_at), "dd MMM yyyy")}
+                    </TableCell>
+                    <TableCell>{row.creator_name}</TableCell>
+                    <TableCell>
+                      <Chip
+                        label={
+                          String(row.status) === "2"
+                            ? "Approved"
+                            : String(row.status) === "1"
+                            ? "Pending"
+                            : String(row.status) === "3"
+                            ? "Rejected"
+                            : ""
+                        }
+                        size="small"
+                        sx={{
+                          color:
+                            String(row.status) === "2"
+                              ? "green"
+                              : String(row.status) === "1"
+                              ? "#ff5e00"
+                              : String(row.status) === "3"
+                              ? "#bf1000"
+                              : "",
+                          backgroundColor:
+                            String(row.status) === "2"
+                              ? "#ccffc9"
+                              : String(row.status) === "1"
+                              ? "#ffe0a6"
+                              : String(row.status) === "3"
+                              ? "#fca69f"
+                              : "",
+                        }}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      {row.public_at === null ? (
+                        <CancelOutlinedIcon sx={{ color: "red" }} />
+                      ) : (
+                        <CheckCircleOutlineIcon sx={{ color: "green" }} />
+                      )}
+                    </TableCell>
+                    <TableCell align="center">
+                      <IconButton size="small" onClick={() => handleEdit(row)}>
+                        <Edit />
+                      </IconButton>
+                      <IconButton
+                        size="small"
+                        onClick={() => handleDelete(row.id, row.workgroup_id)}
+                      >
+                        <Delete />
+                      </IconButton>
+                    </TableCell>
+                  </TableRow>
+                )
+              )
+            )}
           </TableBody>
 
           <TableFooter>
