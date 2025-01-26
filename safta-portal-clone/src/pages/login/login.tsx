@@ -6,42 +6,99 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import React, { useState } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useLoginMutation } from "../../services/auth/authService";
 import { handleApiError } from "../../utils/errorHandler";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm, Controller } from "react-hook-form";
+
+const loginSchema = z.object({
+  email: z.string().email("Invalid email format").min(1, "Email is required"),
+  password: z
+    .string()
+    .min(8, "Password must be at least 8 characters long")
+    .min(1, "Password is required"),
+});
+
+type LoginFormInputs = z.infer<typeof loginSchema>;
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
-  const [userData, setUserData] = useState({ email: "", password: "" });
-  const [error, setError] = useState({ email: "", password: "" });
+  // const [userData, setUserData] = useState({ email: "", password: "" });
+  // const [error, setError] = useState({ email: "", password: "" });
+  // const [login, { isLoading }] = useLoginMutation();
   const [login, { isLoading }] = useLoginMutation();
 
-  const handleLogin = async () => {
-    setError({ email: "", password: "" });
-    let valid = true;
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginFormInputs>({
+    resolver: zodResolver(loginSchema),
+  });
 
-    if (!userData.email) {
-      setError((prevError) => ({ ...prevError, email: "Email is required" }));
-      valid = false;
-    }
-    if (!userData.password) {
-      setError((prevError) => ({
-        ...prevError,
-        password: "Password is required",
-      }));
-      valid = false;
-    }
+  // const handleLogin = async () => {
+  //   setError({ email: "", password: "" });
+  //   let valid = true;
 
-    if (!valid) return;
+  //   if (!userData.email) {
+  //     setError((prevError) => ({ ...prevError, email: "Email is required" }));
+  //     valid = false;
+  //   }
+  //   if (!userData.password) {
+  //     setError((prevError) => ({
+  //       ...prevError,
+  //       password: "Password is required",
+  //     }));
+  //     valid = false;
+  //   }
 
-    const requestData = {
-      email: userData.email,
-      password: userData.password,
-    };
+  //   if (!valid) return;
+
+  //   const requestData = {
+  //     email: userData.email,
+  //     password: userData.password,
+  //   };
+  //   try {
+  //     const response = await login(requestData).unwrap();
+  //     if (response.data && response.data.user) {
+  //       localStorage.setItem("isAuthenticated", "true");
+  //       localStorage.setItem(
+  //         "userLoginName",
+  //         response.data.user.login_name || ""
+  //       );
+  //       localStorage.setItem("userEmail", response.data.user.email || "");
+  //       localStorage.setItem("userToken", response.data.accessToken || "");
+  //       toast.success(response.message);
+  //       navigate("/dashboard");
+  //     } else {
+  //       console.log("No data found in response");
+  //     }
+  //   } catch (error) {
+  //     const errorMesssge = handleApiError(error);
+  //     toast.error(errorMesssge);
+  //   }
+  // };
+
+  // const handleForgotPassword = (e: React.MouseEvent) => {
+  //   e.preventDefault();
+  //   navigate("/forgot-password");
+  // };
+
+  // const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   const { name, value } = e.target;
+  //   setUserData((prevData) => ({
+  //     ...prevData,
+  //     [name]: value,
+  //   }));
+  // };
+
+  const onSubmit = async (data: LoginFormInputs) => {
     try {
-      const response = await login(requestData).unwrap();
+      const response = await login(data).unwrap();
       if (response.data && response.data.user) {
         localStorage.setItem("isAuthenticated", "true");
         localStorage.setItem(
@@ -64,14 +121,6 @@ const Login: React.FC = () => {
   const handleForgotPassword = (e: React.MouseEvent) => {
     e.preventDefault();
     navigate("/forgot-password");
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setUserData((prevData) => ({
-      ...prevData,
-      [name]: value,
-    }));
   };
 
   return (
@@ -98,21 +147,25 @@ const Login: React.FC = () => {
       >
         Email
       </InputLabel>
-      <TextField
-        fullWidth
-        label=""
-        variant="outlined"
-        margin="normal"
+      <Controller
         name="email"
-        value={userData.email}
-        onChange={handleChange}
-        error={!!error.email}
-        helperText={error.email}
-        sx={{
-          "& .MuiOutlinedInput-root": {
-            borderRadius: "14px",
-          },
-        }}
+        control={control}
+        render={({ field }) => (
+          <TextField
+            {...field}
+            fullWidth
+            value={field.value || ""}
+            variant="outlined"
+            margin="normal"
+            error={!!errors.email}
+            helperText={errors.email?.message}
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                borderRadius: "14px",
+              },
+            }}
+          />
+        )}
       />
 
       <InputLabel
@@ -125,22 +178,25 @@ const Login: React.FC = () => {
       >
         Password
       </InputLabel>
-      <TextField
-        fullWidth
-        label=""
-        type="password"
-        variant="outlined"
-        margin="normal"
+      <Controller
         name="password"
-        value={userData.password}
-        onChange={handleChange}
-        error={!!error.password}
-        helperText={error.password}
-        sx={{
-          "& .MuiOutlinedInput-root": {
-            borderRadius: "14px",
-          },
-        }}
+        control={control}
+        render={({ field }) => (
+          <TextField
+            {...field}
+            fullWidth
+            type="password"
+            variant="outlined"
+            margin="normal"
+            error={!!errors.password}
+            helperText={errors.password?.message}
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                borderRadius: "14px",
+              },
+            }}
+          />
+        )}
       />
 
       <Button
@@ -154,7 +210,7 @@ const Login: React.FC = () => {
           fontWeight: "bold",
           textTransform: "none",
         }}
-        onClick={handleLogin}
+        onClick={handleSubmit(onSubmit)}
       >
         {isLoading ? "Loading" : "Login"}
       </Button>
