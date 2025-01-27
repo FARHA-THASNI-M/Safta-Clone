@@ -37,15 +37,6 @@ const documentService = rootApi.injectEndpoints({
         method: "DELETE",
       }),
     }),
-    updateDocument: build.mutation<DocumentFile, EditParams>({
-      query: (params) => {
-        return {
-          url: `/documents/${params.id}?lang=en`,
-          method: "PUT",
-          body: params,
-        };
-      },
-    }),
   }),
   overrideExisting: false,
 });
