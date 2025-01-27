@@ -8,7 +8,6 @@ import {
   TableRow,
   TableHead,
   TableFooter,
-  TablePagination,
   Paper,
   InputAdornment,
   IconButton,
@@ -352,16 +351,15 @@ const Documents: React.FC = () => {
 
           <TableFooter>
             <TableRow>
-              <TablePagination
-                count={GetDocuments?.data?.pagination?.totalCount || 0}
-                rowsPerPage={rowsPerPage}
-                page={page - 1}
-                onPageChange={handleChangePage}
-                onRowsPerPageChange={handleChangeRowsPerPage}
-                rowsPerPageOptions={[10, 20, 30]}
-                labelRowsPerPage=""
-                labelDisplayedRows={({ count }) => `${count} results`}
-              />
+              <TableCell colSpan={9}>
+                <TablePaginationActions
+                  count={GetDocuments?.data?.pagination?.totalCount || 0}
+                  page={page - 1}
+                  rowsPerPage={rowsPerPage}
+                  onPageChange={handleChangePage}
+                  onRowsPerPageChange={handleChangeRowsPerPage}
+                />
+              </TableCell>
             </TableRow>
           </TableFooter>
         </Table>
