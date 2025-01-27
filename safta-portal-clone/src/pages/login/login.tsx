@@ -27,9 +27,6 @@ type LoginFormInputs = z.infer<typeof loginSchema>;
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
-  // const [userData, setUserData] = useState({ email: "", password: "" });
-  // const [error, setError] = useState({ email: "", password: "" });
-  // const [login, { isLoading }] = useLoginMutation();
   const [login, { isLoading }] = useLoginMutation();
 
   const {
@@ -39,62 +36,6 @@ const Login: React.FC = () => {
   } = useForm<LoginFormInputs>({
     resolver: zodResolver(loginSchema),
   });
-
-  // const handleLogin = async () => {
-  //   setError({ email: "", password: "" });
-  //   let valid = true;
-
-  //   if (!userData.email) {
-  //     setError((prevError) => ({ ...prevError, email: "Email is required" }));
-  //     valid = false;
-  //   }
-  //   if (!userData.password) {
-  //     setError((prevError) => ({
-  //       ...prevError,
-  //       password: "Password is required",
-  //     }));
-  //     valid = false;
-  //   }
-
-  //   if (!valid) return;
-
-  //   const requestData = {
-  //     email: userData.email,
-  //     password: userData.password,
-  //   };
-  //   try {
-  //     const response = await login(requestData).unwrap();
-  //     if (response.data && response.data.user) {
-  //       localStorage.setItem("isAuthenticated", "true");
-  //       localStorage.setItem(
-  //         "userLoginName",
-  //         response.data.user.login_name || ""
-  //       );
-  //       localStorage.setItem("userEmail", response.data.user.email || "");
-  //       localStorage.setItem("userToken", response.data.accessToken || "");
-  //       toast.success(response.message);
-  //       navigate("/dashboard");
-  //     } else {
-  //       console.log("No data found in response");
-  //     }
-  //   } catch (error) {
-  //     const errorMesssge = handleApiError(error);
-  //     toast.error(errorMesssge);
-  //   }
-  // };
-
-  // const handleForgotPassword = (e: React.MouseEvent) => {
-  //   e.preventDefault();
-  //   navigate("/forgot-password");
-  // };
-
-  // const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   const { name, value } = e.target;
-  //   setUserData((prevData) => ({
-  //     ...prevData,
-  //     [name]: value,
-  //   }));
-  // };
 
   const onSubmit = async (data: LoginFormInputs) => {
     try {
