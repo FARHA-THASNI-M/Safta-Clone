@@ -1,12 +1,6 @@
 import { rootApi } from "../rootApi";
 import { PaginationParams } from "../types";
-import {
-  DeleteParams,
-  DocumentFile,
-  DocumentParams,
-  DocumentsResponse,
-  EditParams,
-} from "./types";
+import { DeleteParams, DocumentParams, DocumentsResponse } from "./types";
 
 const documentService = rootApi.injectEndpoints({
   endpoints: (build) => ({

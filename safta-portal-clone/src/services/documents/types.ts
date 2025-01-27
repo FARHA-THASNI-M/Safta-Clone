@@ -45,19 +45,3 @@ export type DeleteParams = {
   id: number;
   workgroup_id: number;
 };
-
-export type EditParams = {
-  id: number;
-  title: string;
-  description: string;
-  title_ar: string;
-  description_ar: string;
-  deliverable?: string;
-  isPublic: boolean;
-  workgroup_id: string;
-};
-
-export type DocumentFile = {
-  original_name: string;
-  file_url: string;
-};
