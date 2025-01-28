@@ -1,6 +1,12 @@
 import { rootApi } from "../rootApi";
 import { PaginationParams } from "../types";
-import { DeleteParams, DocumentParams, DocumentsResponse } from "./types";
+import {
+  DeleteParams,
+  DocumentParams,
+  DocumentsResponse,
+  DocumentResponse,
+  DeliverablesResponse,
+} from "./types";
 
 const documentService = rootApi.injectEndpoints({
   endpoints: (build) => ({
@@ -40,9 +46,35 @@ const documentService = rootApi.injectEndpoints({
         method: "DELETE",
       }),
     }),
+    getDocument: build.query<
+      DocumentResponse,
+      { workgroupId: string; documentId: number }
+    >({
+      query: ({ workgroupId, documentId }) =>
+        `/workgroups/${workgroupId}/documents/${documentId}?lang=en`,
+    }),
+    getDeliverables: build.query<DeliverablesResponse, string>({
+      query: (workgroupId) => `/workgroups/${workgroupId}/deliverables?lang=en`,
+    }),
+
+    updateDocument: build.mutation<
+      void,
+      { workgroupId: string; documentId: number; formData: FormData }
+    >({
+      query: ({ workgroupId, documentId, formData }) => ({
+        url: `/workgroups/${workgroupId}/documents/${documentId}?lang=en`,
+        method: "PATCH",
+        body: formData,
+      }),
+    }),
   }),
   overrideExisting: false,
 });
 
-export const { useGetDocumentsQuery, useDeleteDocumentMutation } =
-  documentService;
+export const {
+  useGetDocumentsQuery,
+  useDeleteDocumentMutation,
+  useGetDocumentQuery,
+  useGetDeliverablesQuery,
+  useUpdateDocumentMutation,
+} = documentService;

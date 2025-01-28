@@ -1,4 +1,7 @@
-import React, { useState, useEffect, ChangeEvent } from 'react';
+import React, { useState, useEffect } from "react";
+import { z } from "zod";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Drawer,
   Box,
@@ -11,98 +14,125 @@ import {
   MenuItem,
   Select,
   FormControl,
-  SelectChangeEvent,
-} from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
-import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
-import axiosInstance from '../api/axios';
-import { toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+} from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
+import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
+import { toast } from "react-toastify";
+import {
+  useGetDocumentQuery,
+  useGetDeliverablesQuery,
+  useUpdateDocumentMutation,
+} from "../services/documents/documentService";
+import { Document, DocumentFormData } from "../services/documents/types";
 
 interface EditorProps {
   open: boolean;
   onClose: () => void;
-  selectedDocument?: DocumentType | null;
+  selectedDocument?: Document | null;
 }
 
-interface DocumentType {
-  id: number;
-  title: string;
-  title_ar: string;
-  deliverable?: string;
-  description?: string;
-  description_ar?: string;
-  isPublic?: boolean;
-  workgroup_id: string;
-}
+const documentSchema = z.object({
+  id: z.number(),
+  title: z
+    .string()
+    .min(1, "Title is required")
+    .max(150, "Title must be 150 characters or less"),
+  title_ar: z
+    .string()
+    .max(150, "Arabic title must be 150 characters or less")
+    .optional(),
+  deliverable: z.string().optional(),
+  description: z
+    .string()
+    .max(600, "Description must be 600 characters or less")
+    .optional()
+    .nullable(),
+  description_ar: z
+    .string()
+    .max(600, "Arabic description must be 600 characters or less")
+    .optional()
+    .nullable(),
+  isPublic: z.boolean(),
+  workgroup_id: z.string(),
+});
 
-interface DocumentFile {
-  original_name: string;
-  file_url: string;
-}
+type FormData = z.infer<typeof documentSchema>;
 
 const Editor: React.FC<EditorProps> = ({ open, onClose, selectedDocument }) => {
-  const [formData, setFormData] = useState<DocumentType>({
-    id: selectedDocument?.id || 0,
-    title: selectedDocument?.title || '',
-    title_ar: selectedDocument?.title_ar || '',
-    deliverable: selectedDocument?.deliverable || '',
-    description: selectedDocument?.description || '',
-    description_ar: selectedDocument?.description_ar || '',
-    isPublic: selectedDocument?.isPublic || false,
-    workgroup_id: selectedDocument?.workgroup_id || ''
-  });
-
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [existingFile, setExistingFile] = useState<DocumentFile | null>(null);
-  const [deliverables, setDeliverables] = useState<any[]>([]);
+  const [existingFile, setExistingFile] = useState<{
+    original_name: string;
+    file_url: string;
+  } | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  
+  const { data: documentData } = useGetDocumentQuery(
+    {
+      workgroupId: selectedDocument?.workgroup_id || "",
+      documentId: selectedDocument?.id || 0,
+    },
+    { skip: !selectedDocument }
+  );
+
+  const { data: deliverablesData } = useGetDeliverablesQuery(
+    selectedDocument?.workgroup_id || "",
+    { skip: !selectedDocument }
+  );
+
+  const [updateDocument] = useUpdateDocumentMutation();
+
+  const {
+    control,
+    handleSubmit,
+    reset,
+    formState: { errors },
+    watch,
+  } = useForm<FormData>({
+    resolver: zodResolver(documentSchema),
+    defaultValues: {
+      id: selectedDocument?.id || 0,
+      title: selectedDocument?.title || "",
+      title_ar: selectedDocument?.title_ar || "",
+      deliverable: selectedDocument?.deliverable_name || "",
+      description: selectedDocument?.description || "",
+      description_ar: selectedDocument?.description_ar || "",
+      isPublic: !!selectedDocument?.public_at,
+      workgroup_id: selectedDocument?.workgroup_id || "",
+    },
+  });
+  const watchedValues = watch();
 
   useEffect(() => {
-    if (selectedDocument?.workgroup_id && selectedDocument?.id) {
-        
-      const fetchDocumentData = async () => {
-        try {
-          const [documentResponse, deliverablesResponse] = await Promise.all([
-            axiosInstance.get(`/workgroups/${selectedDocument.workgroup_id}/documents/${selectedDocument.id}?lang=en`),
-            axiosInstance.get(`/workgroups/${selectedDocument.workgroup_id}/deliverables?lang=en`)
-          ]);
+    if (documentData?.data.document) {
+      const doc = documentData.data.document;
+      reset({
+        id: doc.id,
+        title: doc.title,
+        title_ar: doc.title_ar || "",
+        deliverable: doc.deliverable_name || "",
+        description: doc.description || "",
+        description_ar: doc.description_ar || "",
+        isPublic: !!doc.public_at,
+        workgroup_id: doc.workgroup_id,
+      });
 
-          const docData = documentResponse.data.data.document;
-          setFormData((prev) => ({
-            ...prev,
-            title: docData.title,
-            title_ar: docData.title_ar,
-            description: docData.description,
-            description_ar: docData.description_ar,
-            deliverable: docData.deliverable_name || '',
-            isPublic: !!docData.public_at, 
-            workgroup_id: docData?.workgroup_id || '',
-            id: docData?.id || 0,
-          }));
-
-          
-
-          if (docData.original_name && docData.file_url) {
-            setExistingFile({
-              original_name: docData.original_name,
-              file_url: docData.file_url
-            });
-          }
-
-          setDeliverables(deliverablesResponse.data.data.deliverables || []);
-        } catch (error) {
-          console.error("Error fetching document data:", error);
-        }
-      };
-      fetchDocumentData();
+      if (doc.original_name && doc.file_url) {
+        setExistingFile({
+          original_name: doc.original_name,
+          file_url: doc.file_url,
+        });
+      }
     }
-  }, [selectedDocument]);
+  }, [documentData, reset]);
 
-  const handleFileSelect = (event: ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
-      setSelectedFile(event.target.files[0]);
+      const file = event.target.files[0];
+      if (file.size > 10 * 1024 * 1024) {
+        toast.error("File size must be less than 10 mb.");
+        return;
+      }
+      setSelectedFile(file);
       setExistingFile(null);
     }
   };
@@ -112,99 +142,65 @@ const Editor: React.FC<EditorProps> = ({ open, onClose, selectedDocument }) => {
     setExistingFile(null);
   };
 
-  const handleChange = (field: keyof DocumentType,event: SelectChangeEvent|ChangeEvent<HTMLInputElement | { value: unknown }>) =>  {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: event.target.value,
-    }));
-  };
-
-  const handleSubmit = async () => {
-    const formDataToSend = new FormData();
-
-    formDataToSend.append('title', formData.title);
-    formDataToSend.append('title_ar', formData.title_ar);
-    if (formData.deliverable) {
-      formDataToSend.append('deliverable_name', formData.deliverable);
-    }
-    if (formData.description) {
-      formDataToSend.append('description', formData.description);
-    }
-    if (formData.description_ar) {
-      formDataToSend.append('description_ar', formData.description_ar);
-    }
-    formDataToSend.append('public_at', formData.isPublic ? new Date().toISOString() : '');
-
-    if (selectedFile) {
-      formDataToSend.append('file', selectedFile);
-    }
-
+  const onSubmit = async (data: FormData) => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
     try {
-      await axiosInstance.patch(
-        `/workgroups/${formData.workgroup_id}/documents/${formData.id}?lang=en`,
-        formDataToSend,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        }
+      const formDataToSend = new FormData();
+      formDataToSend.append("title", data.title);
+      formDataToSend.append("title_ar", data.title_ar || "");
+      if (data.deliverable) {
+        formDataToSend.append("deliverable_name", data.deliverable);
+      }
+      if (data.description) {
+        formDataToSend.append("description", data.description);
+      }
+      if (data.description_ar) {
+        formDataToSend.append("description_ar", data.description_ar);
+      }
+      formDataToSend.append(
+        "public_at",
+        data.isPublic ? new Date().toISOString() : ""
       );
 
-      toast.success('Document updated successfully!');
+      if (selectedFile) {
+        formDataToSend.append("file", selectedFile);
+      }
 
-      const documentResponse = await axiosInstance.get(
-        `/workgroups/${formData.workgroup_id}/documents/${formData.id}?lang=en`
-      );
-      const updatedDocument = documentResponse.data.data.document;
-      console.log('Updated Document:', updatedDocument);
+      await updateDocument({
+        workgroupId: data.workgroup_id,
+        documentId: data.id,
+        formData: formDataToSend,
+      }).unwrap();
 
-      const documentsListResponse = await axiosInstance.get(
-        `/documents?lang=en&page=1&size=10`
-      );
-      const documentsList = documentsListResponse.data.data.documents;
-      console.log('Documents List:', documentsList);
-
+      toast.success("Document updated successfully!");
       onClose();
     } catch (error) {
-      console.error('Error updating document:', error);
-      toast.error('Failed to update document.'); 
+      console.error("Error updating document:", error);
+      toast.error("Failed to update document.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleReset = () => {
-    setFormData({
-      id: selectedDocument?.id || 0,
-      title: selectedDocument?.title || '',
-      title_ar: selectedDocument?.title_ar || '',
-      deliverable: selectedDocument?.deliverable || '',
-      description: selectedDocument?.description || '',
-      description_ar: selectedDocument?.description_ar || '',
-      isPublic: selectedDocument?.isPublic || false,
-      workgroup_id: selectedDocument?.workgroup_id || ''
-    });
+    reset();
     setSelectedFile(null);
-    
-    if (selectedDocument?.workgroup_id && selectedDocument?.id) {
-      const fetchDocumentData = async () => {
-        try {
-          const response = await axiosInstance.get(`/workgroups/${selectedDocument.workgroup_id}/documents/${selectedDocument.id}?lang=en`);
-          const docData = response.data.data.document;
-          if (docData.original_name && docData.file_url) {
-            setExistingFile({
-              original_name: docData.original_name,
-              file_url: docData.file_url
-            });
-          }
-        } catch (error) {
-          console.error("Error fetching document data:", error);
-        }
-      };
-      fetchDocumentData();
+    if (documentData?.data.document) {
+      const doc = documentData.data.document;
+      if (doc.original_name && doc.file_url) {
+        setExistingFile({
+          original_name: doc.original_name,
+          file_url: doc.file_url,
+        });
+      }
     }
   };
-
-  console.log(formData);
-  
+  const isFormValid =
+    watchedValues.title &&
+    watchedValues.title.length > 0 &&
+    (selectedFile || existingFile) &&
+    Object.keys(errors).length === 0;
 
   return (
     <Drawer
@@ -213,20 +209,22 @@ const Editor: React.FC<EditorProps> = ({ open, onClose, selectedDocument }) => {
       onClose={onClose}
       PaperProps={{
         sx: {
-          width: { xs: '100%', sm: 700 },
-          padding: '25px 35px',
-          bgcolor: '#fff',
+          width: { xs: "100%", sm: 700 },
+          padding: "25px 35px",
+          bgcolor: "#fff",
         },
       }}
     >
-      <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-        <Box sx={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          mb: 2
-        }}>
-          <Typography sx={{ fontSize: '16px', fontWeight: 'bold' }}>
+      <Box sx={{ height: "100%", display: "flex", flexDirection: "column" }}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            mb: 2,
+          }}
+        >
+          <Typography sx={{ fontSize: "16px", fontWeight: "bold" }}>
             Update Document
           </Typography>
           <IconButton onClick={onClose} size="small" sx={{ p: 0 }}>
@@ -234,80 +232,124 @@ const Editor: React.FC<EditorProps> = ({ open, onClose, selectedDocument }) => {
           </IconButton>
         </Box>
 
-        <Box sx={{ flex: 1, mt:3, overflow: 'auto' }}>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-            <Box sx={{ display:'flex', justifyContent:'space-between',gap: 2}}>
-            <Box sx={{flex: 1}}>
-            <Box sx={{display:'flex', justifyContent:'space-between'}}>
-              <Typography>Title<span style={{color: 'red'}}>*</span></Typography>
-              <Typography variant="caption" color="textSecondary">
-                {formData.title.length}/150
-              </Typography>
+        <Box
+          component="form"
+          onSubmit={handleSubmit(onSubmit)}
+          sx={{ flex: 1, mt: 3, overflow: "auto" }}
+        >
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+            <Box
+              sx={{ display: "flex", justifyContent: "space-between", gap: 2 }}
+            >
+              <Box sx={{ flex: 1 }}>
+                <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                  <Typography>
+                    Title<span style={{ color: "red" }}>*</span>
+                  </Typography>
+                  <Typography variant="caption" color="textSecondary">
+                    <Controller
+                      name="title"
+                      control={control}
+                      render={({ field }) => <>{field.value.length}/150</>}
+                    />
+                  </Typography>
+                </Box>
+                <Controller
+                  name="title"
+                  control={control}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      fullWidth
+                      error={!!errors.title}
+                      helperText={errors.title?.message}
+                    />
+                  )}
+                />
               </Box>
-              <TextField
-                required
-                fullWidth
-                value={formData.title}
-                onChange={(e)=>handleChange('title',e)}
-              />
-            </Box>
-            <Box sx={{ flex:1}}>
-            <Box sx={{ display:'flex', justifyContent:'space-between'}}>
-              <Typography variant="caption" color="textSecondary">
-                {formData.title.length}/150
-              </Typography>
-              <Typography >عنوان المستند</Typography>
+
+              <Box sx={{ flex: 1 }}>
+                <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                  <Typography variant="caption" color="textSecondary">
+                    <Controller
+                      name="title_ar"
+                      control={control}
+                      render={({ field }) => <>{field.value.length}/150</>}
+                    />
+                  </Typography>
+                  <Typography>عنوان المستند</Typography>
+                </Box>
+                <Controller
+                  name="title_ar"
+                  control={control}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      fullWidth
+                      error={!!errors.title_ar}
+                      helperText={errors.title_ar?.message}
+                    />
+                  )}
+                />
               </Box>
-              <TextField
-                fullWidth
-                value={formData.title_ar}
-                onChange={(e)=>handleChange('title_ar',e)}
-              />
-            </Box>
             </Box>
 
             <Box>
-              <Typography sx={{ mb: 0.5, fontSize: '14px' }}>Deliverable</Typography>
+              <Typography sx={{ mb: 0.5, fontSize: "14px" }}>
+                Deliverable
+              </Typography>
               <FormControl fullWidth size="small">
-                <Select
-                  value={formData.deliverable}
-                  onChange={(e)=>handleChange('deliverable',e)}
-                  displayEmpty
-                  sx={{ 
-                    backgroundColor: '#fff',
-                    '& .MuiSelect-select': {
-                      padding: '8.5px 14px',
-                    }
-                  }}
-                >
-                  {deliverables.map((deliverable) => (
-                    <MenuItem key={deliverable.id} value={deliverable.name}  >
-                      {deliverable.name}
-                    </MenuItem>
-                  ))}
-                </Select>
+                <Controller
+                  name="deliverable"
+                  control={control}
+                  render={({ field }) => (
+                    <Select
+                      {...field}
+                      displayEmpty
+                      sx={{
+                        backgroundColor: "#fff",
+                        "& .MuiSelect-select": {
+                          padding: "8.5px 14px",
+                        },
+                      }}
+                    >
+                      {deliverablesData?.data.deliverables.map(
+                        (deliverable) => (
+                          <MenuItem
+                            key={deliverable.id}
+                            value={deliverable.name}
+                          >
+                            {deliverable.name}
+                          </MenuItem>
+                        )
+                      )}
+                    </Select>
+                  )}
+                />
               </FormControl>
             </Box>
 
-            <Box sx={{ 
-              backgroundColor: '#F8F9FA',
-              borderRadius: '4px',
-              p: 2,
-              textAlign: 'center'
-            }}>
-              <Typography sx={{ fontSize: '12px', color: '#666', mb: 1 }}>
+            <Box
+              sx={{
+                backgroundColor: "#F8F9FA",
+                borderRadius: "4px",
+                p: 2,
+                textAlign: "center",
+              }}
+            >
+              <Typography sx={{ fontSize: "12px", color: "#666", mb: 1 }}>
                 Max. Doc Size 10 mb
               </Typography>
               <Button
                 component="label"
                 sx={{
-                  color: 'black',
-                  fontWeight:'bold',
-                  fontSize: '14px',
+                  color: "black",
+                  fontWeight: "bold",
+                  fontSize: "14px",
                 }}
                 variant="outlined"
               >
-                Upload document<span style={{ color:'red'}}>*</span>
+                Upload document<span style={{ color: "red" }}>*</span>
                 <input
                   type="file"
                   hidden
@@ -318,26 +360,32 @@ const Editor: React.FC<EditorProps> = ({ open, onClose, selectedDocument }) => {
             </Box>
 
             {(selectedFile || existingFile) && (
-              <Box sx={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 1,
-                p: 1,
-                border: '1px solid #eee',
-                borderRadius: '4px'
-              }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1,
+                  p: 1,
+                  border: "1px solid #eee",
+                  borderRadius: "4px",
+                }}
+              >
                 <InsertDriveFileIcon sx={{ fontSize: 20 }} />
-                <Typography sx={{ 
-                  flex: 1,
-                  fontSize: '14px',
-                  textOverflow: 'ellipsis',
-                  overflow: 'hidden',
-                  whiteSpace: 'nowrap'
-                }}>
-                  {selectedFile ? selectedFile.name : existingFile?.original_name}
+                <Typography
+                  sx={{
+                    flex: 1,
+                    fontSize: "14px",
+                    textOverflow: "ellipsis",
+                    overflow: "hidden",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {selectedFile
+                    ? selectedFile.name
+                    : existingFile?.original_name}
                 </Typography>
-                <IconButton 
-                  size="small" 
+                <IconButton
+                  size="small"
                   onClick={handleRemoveFile}
                   sx={{ p: 0 }}
                 >
@@ -345,84 +393,120 @@ const Editor: React.FC<EditorProps> = ({ open, onClose, selectedDocument }) => {
                 </IconButton>
               </Box>
             )}
-
-            <Box sx={{ display: 'flex', justifyContent:'space-between', gap: 2 }}>
-            <Box sx={{ flex: 1}}>
-                <Box sx={{ display: 'flex', justifyContent:'space-between'}}>
-              <Typography >Description</Typography>
-              <Typography variant="caption" color="textSecondary">
-                {formData.description?.length || 0}/600
-              </Typography>
-              </Box>
-              <TextField
-                fullWidth
-                multiline
-                rows={4}
-                value={formData.description}
-                onChange={(e)=>handleChange('description',e)}
-              />
-            </Box>
-            <Box sx={{ flex:1}}>
-            <Box sx={{ display:'flex', justifyContent:'space-between'}}>
-                <Typography variant="caption" color="textSecondary">
-                    {formData.description_ar?.length || 0}/600
-                </Typography>
-              <Typography>الوصف</Typography>
-              </Box>
-              <TextField
-                fullWidth
-                multiline
-                rows={4}
-                value={formData.description_ar}
-                onChange={(e)=>handleChange('description_ar',e)}
-              />
-            </Box>
-            </Box>
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={formData.isPublic}
-                  onChange={(e) =>
-                    setFormData((prev) => ({ ...prev, isPublic: e.target.checked }))
-                  }
-                  sx={{
-                    color: '#000',
-                    '&.Mui-checked': {
-                      color: 'black',
-                    },
-                  }}
+            <Box
+              sx={{ display: "flex", justifyContent: "space-between", gap: 2 }}
+            >
+              <Box sx={{ flex: 1 }}>
+                <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                  <Typography>Description</Typography>
+                  <Typography variant="caption" color="textSecondary">
+                    <Controller
+                      name="description"
+                      control={control}
+                      render={({ field }) => (
+                        <>{field.value?.length || 0}/600</>
+                      )}
+                    />
+                  </Typography>
+                </Box>
+                <Controller
+                  name="description"
+                  control={control}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      fullWidth
+                      multiline
+                      rows={4}
+                      error={!!errors.description}
+                      helperText={errors.description?.message}
+                    />
+                  )}
                 />
-              }
-              label={
-                <Typography sx={{ fontSize: '14px' }}>Public</Typography>
-              }
+              </Box>
+
+              <Box sx={{ flex: 1 }}>
+                <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                  <Typography variant="caption" color="textSecondary">
+                    <Controller
+                      name="description_ar"
+                      control={control}
+                      render={({ field }) => (
+                        <>{field.value?.length || 0}/600</>
+                      )}
+                    />
+                  </Typography>
+                  <Typography>الوصف</Typography>
+                </Box>
+                <Controller
+                  name="description_ar"
+                  control={control}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      fullWidth
+                      multiline
+                      rows={4}
+                      error={!!errors.description_ar}
+                      helperText={errors.description_ar?.message}
+                    />
+                  )}
+                />
+              </Box>
+            </Box>
+
+            <Controller
+              name="isPublic"
+              control={control}
+              render={({ field: { onChange, value } }) => (
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={value}
+                      onChange={(e) => onChange(e.target.checked)}
+                      sx={{
+                        color: "#000",
+                        "&.Mui-checked": {
+                          color: "black",
+                        },
+                      }}
+                    />
+                  }
+                  label={
+                    <Typography sx={{ fontSize: "14px" }}>Public</Typography>
+                  }
+                />
+              )}
             />
           </Box>
         </Box>
 
-        <Box sx={{
-          mt: 3,
-          pt: 2,
-          display: 'flex',
-          gap: 2,
-        }}>
+        <Box
+          sx={{
+            mt: 3,
+            pt: 2,
+            display: "flex",
+            gap: 2,
+          }}
+        >
           <Button
             variant="outlined"
             onClick={handleReset}
+            disabled={isSubmitting}
             sx={{
-                color: 'black',
-                borderColor: 'black',
-              
+              color: "black",
+              borderColor: "black",
             }}
           >
             Reset
           </Button>
           <Button
+            type="submit"
             variant="contained"
-            onClick={handleSubmit}
-            sx={{ 
-                bgcolor: 'black',
-                color: 'white',
+            onClick={handleSubmit(onSubmit)}
+            sx={{
+              bgcolor: "black",
+              color: "white",
             }}
           >
             Update
