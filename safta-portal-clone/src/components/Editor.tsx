@@ -32,7 +32,7 @@ interface EditorProps {
 }
 
 const documentSchema = z.object({
-  id: z.number(),
+  id: z.string(),
   title: z
     .string()
     .min(1, "Title is required")
@@ -90,7 +90,7 @@ const Editor: React.FC<EditorProps> = ({ open, onClose, selectedDocument }) => {
   } = useForm<FormData>({
     resolver: zodResolver(documentSchema),
     defaultValues: {
-      id: selectedDocument?.id || 0,
+      id: selectedDocument?.id?.toString() || 0,
       title: selectedDocument?.title || "",
       title_ar: selectedDocument?.title_ar || "",
       deliverable: selectedDocument?.deliverable_name || "",
@@ -141,6 +141,8 @@ const Editor: React.FC<EditorProps> = ({ open, onClose, selectedDocument }) => {
     setSelectedFile(null);
     setExistingFile(null);
   };
+
+  console.log(errors);
 
   const onSubmit = async (data: FormData) => {
     if (isSubmitting) return;
@@ -274,7 +276,7 @@ const Editor: React.FC<EditorProps> = ({ open, onClose, selectedDocument }) => {
                     <Controller
                       name="title_ar"
                       control={control}
-                      render={({ field }) => <>{field.value.length}/150</>}
+                      render={({ field }) => <>{field?.value?.length}/150</>}
                     />
                   </Typography>
                   <Typography>عنوان المستند</Typography>
