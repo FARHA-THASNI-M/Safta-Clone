@@ -33,11 +33,25 @@ import { useSearchParams } from "react-router-dom";
 import { useGetWorkgroupsQuery } from "../../services/working groups/workinggroupService";
 import { DocumentParams } from "../../services/documents/types";
 
+const useDebounce = (value: string, delay: number) => {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+  return debouncedValue;
+};
 const Documents: React.FC = () => {
   const [page, setPage] = useState<number>(1);
   const [rowsPerPage, setRowsPerPage] = useState<number>(10);
   const [deleting, setDeleting] = useState<number | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string>("");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [selectedDocument, setSelectedDocument] = useState<Document | null>(
     null
@@ -55,36 +69,39 @@ const Documents: React.FC = () => {
     isLoading: isWorkgroupsLoading,
   } = useGetWorkgroupsQuery();
 
+  const [workgroups, setWorkgroups] = useState<{ id: string; name: string }[]>(
+    []
+  );
   useEffect(() => {
     if (workgroupError) {
       setError("Failed to fetch workgroups.");
       console.error("Error fetching workgroups:", workgroupError);
     }
   }, [workgroupError]);
-  const [workgroups, setWorkgroups] = useState<{ id: string; name: string }[]>(
-    []
-  );
 
-  useEffect(() => {
-    if (workgroupData) {
-      setWorkgroups(workgroupData.data.workgroups);
-    }
-  }, [workgroupData]);
-
-  useEffect(() => {
-    const filterObj: DocumentParams = {
-      uploaded_at: searchParams.get("uploaded_at") || "",
-      workgroup: searchParams.get("working_group") || "",
-      status: searchParams.get("status") || "",
-    };
-    setFilters(filterObj);
-  }, [searchParams]);
+  const debouncedSearchQuery = useDebounce(searchQuery, 500);
 
   const { data: GetDocuments, refetch } = useGetDocumentsQuery({
     ...filters,
     page: page,
     size: rowsPerPage,
+    q: debouncedSearchQuery,
   });
+
+  // useEffect(() => {
+  //   if (workgroupData) {
+  //     setWorkgroups(workgroupData.data.workgroups);
+  //   }
+  // }, [workgroupData]);
+
+  // useEffect(() => {
+  //   const filterObj: DocumentParams = {
+  //     uploaded_at: searchParams.get("uploaded_at") || "",
+  //     workgroup: searchParams.get("working_group") || "",
+  //     status: searchParams.get("status") || "",
+  //   };
+  //   setFilters(filterObj);
+  // }, [searchParams]);
 
   const [deleteDocument] = useDeleteDocumentMutation();
 
@@ -143,6 +160,9 @@ const Documents: React.FC = () => {
       status: "",
     });
     setSearchParams({});
+  };
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(event.target.value);
   };
   const handleChangePage = (
     event: React.MouseEvent<HTMLButtonElement> | null,
@@ -243,6 +263,7 @@ const Documents: React.FC = () => {
             placeholder="Search..."
             size="small"
             value={searchQuery}
+            onChange={handleSearchChange}
             sx={{
               width: "300px",
               "& .MuiOutlinedInput-root": {

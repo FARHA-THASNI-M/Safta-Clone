@@ -39,6 +39,7 @@ export type DocumentParams = {
   document_id?: string;
   status?: string;
   uploaded_at?: string;
+  q?: string;
 };
 
 export type DeleteParams = {

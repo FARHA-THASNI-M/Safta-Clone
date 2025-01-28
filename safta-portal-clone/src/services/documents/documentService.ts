@@ -6,9 +6,17 @@ const documentService = rootApi.injectEndpoints({
   endpoints: (build) => ({
     getDocuments: build.query<
       DocumentsResponse,
-      PaginationParams & DocumentParams
+      PaginationParams & DocumentParams & { q?: string }
     >({
-      query: ({ page, document_id, size, status, uploaded_at, workgroup }) => {
+      query: ({
+        page,
+        document_id,
+        size,
+        status,
+        uploaded_at,
+        workgroup,
+        q,
+      }) => {
         let queryParams: PaginationParams & DocumentParams = {};
 
         if (workgroup) queryParams.workgroup = workgroup;
@@ -17,6 +25,7 @@ const documentService = rootApi.injectEndpoints({
         if (size) queryParams.size = size;
         if (document_id) queryParams.document_id = document_id;
         if (page) queryParams.page = page;
+        if (q) queryParams.q = q;
 
         return {
           url: `/documents`,
