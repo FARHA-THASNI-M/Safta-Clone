@@ -217,6 +217,18 @@ const Editor: React.FC<EditorProps> = ({ open, onClose, selectedDocument }) => {
         },
       }}
     >
+      <IconButton
+        onClick={onClose}
+        size="small"
+        sx={{
+          position: "absolute",
+          right: 8,
+          top: 8,
+          p: 1,
+        }}
+      >
+        <CloseIcon />
+      </IconButton>
       <Box sx={{ height: "100%", display: "flex", flexDirection: "column" }}>
         <Box
           sx={{

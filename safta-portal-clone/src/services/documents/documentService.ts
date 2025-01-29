@@ -38,6 +38,7 @@ const documentService = rootApi.injectEndpoints({
           params: queryParams,
         };
       },
+      providesTags: ["Documents"],
     }),
 
     deleteDocument: build.mutation<void, DeleteParams>({
@@ -45,6 +46,7 @@ const documentService = rootApi.injectEndpoints({
         url: `/workgroups/${workgroup_id}/documents/${id}?lang=en`,
         method: "DELETE",
       }),
+      invalidatesTags: ["Documents"],
     }),
     getDocument: build.query<
       DocumentResponse,
@@ -52,6 +54,9 @@ const documentService = rootApi.injectEndpoints({
     >({
       query: ({ workgroupId, documentId }) =>
         `/workgroups/${workgroupId}/documents/${documentId}?lang=en`,
+      providesTags: (_result, _error, { documentId }) => [
+        { type: "Documents", id: documentId },
+      ],
     }),
     getDeliverables: build.query<DeliverablesResponse, string>({
       query: (workgroupId) => `/workgroups/${workgroupId}/deliverables?lang=en`,
@@ -66,6 +71,10 @@ const documentService = rootApi.injectEndpoints({
         method: "PATCH",
         body: formData,
       }),
+      invalidatesTags: (_result, _error, { documentId }) => [
+        { type: "Documents", id: documentId },
+        "Documents",
+      ],
     }),
   }),
   overrideExisting: false,
