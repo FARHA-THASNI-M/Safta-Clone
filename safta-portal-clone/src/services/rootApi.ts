@@ -1,12 +1,18 @@
-// import { BaseQueryFn, createApi, FetchArgs, fetchBaseQuery, FetchBaseQueryError } from "@reduxjs/toolkit/query/react";
-
 import {
   BaseQueryFn,
   createApi,
   FetchArgs,
   fetchBaseQuery,
   FetchBaseQueryError,
-} from "@reduxjs/toolkit/query";
+} from "@reduxjs/toolkit/query/react";
+import { handleLogout } from "../utils/authUtils";
+// import {
+//   BaseQueryFn,
+//   createApi,
+//   FetchArgs,
+//   fetchBaseQuery,
+//   FetchBaseQueryError,
+// } from "@reduxjs/toolkit/query";
 import { useNavigate } from "react-router-dom";
 
 // export const rootApi = createApi({
@@ -56,7 +62,6 @@ const baseQuery = fetchBaseQuery({
     return headers;
   },
 });
-const navigate = useNavigate();
 const baseQueryWithReauth: BaseQueryFn<
   string | FetchArgs,
   unknown,
@@ -64,17 +69,18 @@ const baseQueryWithReauth: BaseQueryFn<
 > = async (args, api, extraOptions) => {
   let result = await baseQuery(args, api, extraOptions);
   if (result.error && result.error.status === 401) {
-    localStorage.removeItem("isAuthenticated");
-    localStorage.removeItem("userLoginName");
-    localStorage.removeItem("userEmail");
-    localStorage.removeItem("userToken");
-    navigate("/login");
+    handleLogout();
+    // localStorage.removeItem("isAuthenticated");
+    // localStorage.removeItem("userLoginName");
+    // localStorage.removeItem("userEmail");
+    // localStorage.removeItem("userToken");
   }
   return result;
 };
 
-export const rootApi = createApi({
+const rootApi = createApi({
   baseQuery: baseQueryWithReauth,
   endpoints: () => ({}),
   tagTypes: ["Documents"],
 });
+export default rootApi;

@@ -2,12 +2,17 @@ import * as React from "react";
 import { Box, IconButton, Menu, Avatar, Typography } from "@mui/material";
 import { Close } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { LogoutModal } from "../layouts/dashboard/components/modal";
+import { handleLogout } from "../utils/authActions";
 
 const UserProfile = () => {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const [showLogoutModal, setShowLogoutModal] = React.useState(false);
   const navigate = useNavigate();
-  const open = Boolean(anchorEl);
+  const dispatch = useDispatch();
 
+  const open = Boolean(anchorEl);
   const loginName = localStorage.getItem("userLoginName") || "User";
   const email = localStorage.getItem("userEmail") || "user@example.com";
 
@@ -19,13 +24,14 @@ const UserProfile = () => {
     setAnchorEl(null);
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("isAuthenticated");
-    localStorage.removeItem("userLoginName");
-    localStorage.removeItem("userEmail");
-    localStorage.removeItem("userToken");
-    navigate("/login");
+  const handleLogoutClick = () => {
+    setShowLogoutModal(true);
     handleClose();
+  };
+
+  const handleLogoutConfirm = () => {
+    handleLogout(dispatch, navigate);
+    setShowLogoutModal(false);
   };
 
   return (
@@ -105,7 +111,7 @@ const UserProfile = () => {
           </Typography>
 
           <Box
-            onClick={handleLogout}
+            onClick={handleLogoutClick}
             sx={{
               width: "100%",
               py: 1.5,
@@ -120,6 +126,11 @@ const UserProfile = () => {
             }}
           >
             Logout
+            <LogoutModal
+              open={showLogoutModal}
+              onClose={() => setShowLogoutModal(false)}
+              onConfirm={handleLogoutConfirm}
+            />
           </Box>
         </Box>
       </Menu>

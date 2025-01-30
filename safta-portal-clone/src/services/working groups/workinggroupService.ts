@@ -1,4 +1,4 @@
-import { rootApi } from "../rootApi";
+import rootApi from "../rootApi";
 import { WorkgroupsResponse } from "./types";
 
 export const workgroupApi = rootApi.injectEndpoints({

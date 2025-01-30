@@ -1,8 +1,6 @@
-import { rootApi } from "../rootApi";
+import rootApi from "../rootApi";
 import { APIResponse } from "../types";
 import { LoginPayload, LoginResponse, ForgotPasswordPayload } from "./types";
-
-
 
 const authService = rootApi.injectEndpoints({
   endpoints: (build) => ({
@@ -18,7 +16,7 @@ const authService = rootApi.injectEndpoints({
       query: (email) => ({
         url: "/auth/password-reset/request?lang=en",
         method: "POST",
-        body:  email ,
+        body: email,
       }),
     }),
   }),

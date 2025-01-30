@@ -1,4 +1,4 @@
-import { rootApi } from "../rootApi";
+import rootApi from "../rootApi";
 import { PaginationParams } from "../types";
 import {
   DeleteParams,
