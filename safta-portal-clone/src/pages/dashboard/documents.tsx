@@ -32,7 +32,49 @@ import {
 import { useSearchParams } from "react-router-dom";
 import { useGetWorkgroupsQuery } from "../../services/working groups/workinggroupService";
 import { DocumentParams } from "../../services/documents/types";
+import File from "@mui/icons-material/FileDownload";
 
+const handleDownload = async (documentId: number, workgroupId: number) => {
+  try {
+    const downloadUrl = `https://dev-portal.safta.sa/api/v1/workgroups/${workgroupId}/documents/${documentId}/download`;
+
+    const response = await fetch(downloadUrl, {
+      method: "GET",
+      headers: {
+        Accept: "application/pdf, image/*",
+        Authorization: `Bearer ${localStorage.getItem("userToken")}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to download document");
+    }
+
+    const contentType = response.headers.get("Content-Type");
+    let fileExtension = "pdf";
+    if (contentType?.includes("image/jpeg")) {
+      fileExtension = "jpg";
+    } else if (contentType?.includes("image/png")) {
+      fileExtension = "png";
+    } else if (contentType?.includes("application/pdf")) {
+      fileExtension = "pdf";
+    }
+    const blob = await response.blob();
+    const fileURL = URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+    link.href = fileURL;
+    link.download = `document_${documentId}.${fileExtension}`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    toast.success("Document downloaded successfully!");
+  } catch (error) {
+    console.error("Error downloading document:", error);
+    toast.error("Failed to download document.");
+  }
+};
 const useDebounce = (value: string, delay: number) => {
   const [debouncedValue, setDebouncedValue] = useState(value);
 
@@ -362,6 +404,12 @@ const Documents: React.FC = () => {
                         onClick={() => handleDelete(row.id, row.workgroup_id)}
                       >
                         <Delete />
+                      </IconButton>
+                      <IconButton
+                        size="small"
+                        onClick={() => handleDownload(row.id, row.workgroup_id)}
+                      >
+                        <File />
                       </IconButton>
                     </TableCell>
                   </TableRow>
