@@ -34,7 +34,11 @@ import { useGetWorkgroupsQuery } from "../../services/working groups/workinggrou
 import { DocumentParams } from "../../services/documents/types";
 import File from "@mui/icons-material/FileDownload";
 
-const handleDownload = async (documentId: number, workgroupId: number) => {
+const handleDownload = async (
+  documentId: number,
+  workgroupId: number,
+  original_name: string
+) => {
   try {
     const downloadUrl = `https://dev-portal.safta.sa/api/v1/workgroups/${workgroupId}/documents/${documentId}/download`;
 
@@ -64,7 +68,9 @@ const handleDownload = async (documentId: number, workgroupId: number) => {
 
     const link = document.createElement("a");
     link.href = fileURL;
-    link.download = `document_${documentId}.${fileExtension}`;
+    link.download = `${
+      original_name || `document_${documentId}`
+    }.${fileExtension}`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -407,7 +413,13 @@ const Documents: React.FC = () => {
                       </IconButton>
                       <IconButton
                         size="small"
-                        onClick={() => handleDownload(row.id, row.workgroup_id)}
+                        onClick={() =>
+                          handleDownload(
+                            row.id,
+                            row.workgroup_id,
+                            row.original_name
+                          )
+                        }
                       >
                         <File />
                       </IconButton>
