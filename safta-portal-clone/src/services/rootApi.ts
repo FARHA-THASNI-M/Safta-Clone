@@ -13,7 +13,7 @@ import { handleLogout } from "../utils/authUtils";
 //   fetchBaseQuery,
 //   FetchBaseQueryError,
 // } from "@reduxjs/toolkit/query";
-import { useNavigate } from "react-router-dom";
+// import { useNavigate } from "react-router-dom";
 
 // export const rootApi = createApi({
 //   baseQuery: fetchBaseQuery({

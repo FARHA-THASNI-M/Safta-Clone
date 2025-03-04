@@ -25,7 +25,6 @@ export const useDocumentDownload = (): DownloadResponse => {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
-            // Get token from your auth system
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         }

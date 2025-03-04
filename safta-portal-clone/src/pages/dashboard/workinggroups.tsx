@@ -1,7 +1,10 @@
+import InfiniteScrollComponent from "../../components/InfiniteScrollComponent";
 
 const Workinggroups = () => {
   return (
-    <div>workinggroups</div>
+    <div>workinggroups
+    <InfiniteScrollComponent/>
+    </div>
   )
 }
 
